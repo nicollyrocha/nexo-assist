@@ -10,7 +10,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx --env-file-if-exists=../../apps/web/.env.local scripts/migrate.ts",
     "db:check": "tsx --env-file-if-exists=../../apps/web/.env.local scripts/check.ts"
   },
   "dependencies": {
