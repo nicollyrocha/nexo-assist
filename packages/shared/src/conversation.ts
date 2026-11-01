@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Ticket, TicketDraft } from "./domain";
+import { Priority, Ticket, TicketDraft } from "./domain";
 
 /**
  * Ciclo da conversa:
@@ -60,7 +60,21 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     prompt: z.string(),
     tickets: z.array(Ticket),
   }),
-  z.object({ kind: z.literal("draft"), draft: TicketDraft, dueAtPreview: z.iso.datetime() }),
+  z.object({
+    kind: z.literal("draft"),
+    actionId: z.string(),
+    draft: TicketDraft,
+    dueAtPreview: z.iso.datetime(),
+  }),
+  /** Proposta de complementar ou reabrir um chamado, aguardando confirmação (Anexo A: abertura). */
+  z.object({
+    kind: z.literal("update_draft"),
+    actionId: z.string(),
+    ticket: Ticket,
+    comment: z.string(),
+    newPriority: Priority.nullable(),
+    reopen: z.boolean(),
+  }),
   z.object({ kind: z.literal("quick_replies"), options: z.array(z.string()).min(1).max(4) }),
   z.object({
     kind: z.literal("event"),

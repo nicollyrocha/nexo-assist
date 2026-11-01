@@ -1,0 +1,26 @@
+{
+  "name": "@nexo/agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "eval": "tsx --env-file-if-exists=../../apps/web/.env.local evals/run.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "@nexo/shared": "workspace:*",
+    "@nexo/tickets-client": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
+  }
+}

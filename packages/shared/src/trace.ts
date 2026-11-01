@@ -38,10 +38,9 @@ export const TOOLS = [
   "search_help_center",
   "list_my_tickets",
   "get_ticket",
-  "propose_ticket_draft",
-  "create_ticket",
-  "update_ticket",
-  "reopen_ticket",
+  "propose_new_ticket",
+  "propose_ticket_update",
+  "confirm_pending_action",
   "transfer_to_analyst",
 ] as const;
 export const ToolName = z.enum(TOOLS);

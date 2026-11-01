@@ -71,8 +71,12 @@ apps/tickets      Serviço de chamados simulado (Next.js só com Route Handlers)
 packages/tickets-client  Cliente HTTP do serviço de chamados: timeout, retry com backoff/Retry-After,
                   idempotency key repetida nas tentativas; nunca lança — devolve CallResult com
                   tentativas e duração (vão para o DecisionTrace). Contrato em shared/tickets-api.ts.
-packages/agent    (a criar) Loop do agent: prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
-                  nem a fetch — recebe clientes injetados (tickets, central de ajuda, trace store).
+packages/agent    Loop do agent (runTurn): prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
+                  nem a fetch — recebe Model e TicketsClient injetados. Regras que não dependem do
+                  modelo ficam em código: rascunho + confirmação em mensagem posterior, trava de
+                  duplicidade, transferência automática (confiança < 0.6, chamado crítico, recusa).
+                  Testes com modelo roteirizado (src/testing.ts); evals com modelo real em
+                  evals/run.ts (custam dinheiro: peça autorização antes de rodar).
 packages/shared   Contratos zod (Ticket, Conversation, Message, DecisionTrace…), rótulos pt-BR e regras
                   puras do Anexo A (sla.ts: prazos/vencimento; conversation.ts: ciclo e pausa).
 packages/db       Schema Drizzle, migrações e repositório do banco da aplicação (sessões, conversas,
