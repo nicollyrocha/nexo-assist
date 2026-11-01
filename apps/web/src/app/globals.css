@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/*
+ * Tokens do tema. Valores definitivos virão de docs/design/tokens.md (design-specialist),
+ * extraídos do HTML exportado do protótipo. Por ora só as fontes.
+ */
+@theme inline {
+  --font-sans: var(--font-schibsted), system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
