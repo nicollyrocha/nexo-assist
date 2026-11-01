@@ -65,14 +65,26 @@ Qualquer biblioteca além dessas precisa de justificativa (ADR curto).
 ```
 apps/web          Next.js: telas (login, chat, console) + Route Handlers (auth, conversas, streaming SSE).
                   Orquestra o agent; não contém regra de negócio de chamados.
-packages/agent    Loop do agent: prompt, ferramentas, regras do Anexo A, DecisionTrace. Sem acesso direto
-                  a banco nem a fetch — recebe clientes injetados (tickets, central de ajuda, trace store).
-apps/tickets      Serviço de chamados simulado: API HTTP própria (Node), banco próprio no Neon, falhas
-                  simuladas do legado. Deploy separado na Vercel.
-packages/shared   Contratos (tipos + schemas zod): Ticket, Conversation, Message, DecisionTrace…
-packages/db       Schemas Drizzle e migrações do banco da aplicação (conversas, mensagens, traces).
-docs/             Anexos, specs de design, ADRs.
+apps/tickets      Serviço de chamados simulado (Next.js só com Route Handlers): banco próprio no Neon
+                  (src/db: schema, repo, seeds), falhas simuladas do legado. Deploy separado na Vercel.
+                  Também hospeda a central de ajuda (full-text em português).
+packages/agent    (a criar) Loop do agent: prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
+                  nem a fetch — recebe clientes injetados (tickets, central de ajuda, trace store).
+packages/shared   Contratos zod (Ticket, Conversation, Message, DecisionTrace…), rótulos pt-BR e regras
+                  puras do Anexo A (sla.ts: prazos/vencimento; conversation.ts: ciclo e pausa).
+packages/db       Schema Drizzle, migrações e repositório do banco da aplicação (sessões, conversas,
+                  mensagens, traces).
+docs/             Anexos, specs de design, ADRs (0001 camadas, 0002 dados, 0003 prazos).
 ```
+
+### Convenções da base
+- **Next.js 16** tem mudanças de API: antes de escrever código Next, leia o guia relevante em
+  `apps/web/node_modules/next/dist/docs/` (ver `AGENTS.md` de cada app). `LayoutProps`/`PageProps` vêm do
+  `next typegen` (já no script `typecheck`).
+- Pacotes internos são TypeScript fonte (`exports: ./src/index.ts`, `transpilePackages` nos apps).
+- Testes de banco usam **PGlite** (`createTestDb` / `createTestTicketsDb`) com as migrações reais — não
+  precisam de Neon. Mudou schema → `pnpm --filter <pkg> db:generate` e commite a migração.
+- Seeds usam datas relativas a `now` (`buildSeed(now)`); `pnpm --filter @nexo/tickets db:seed` apaga e recria.
 
 ## Regras invioláveis
 
