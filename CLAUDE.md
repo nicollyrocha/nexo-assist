@@ -54,7 +54,7 @@ as de baixa confiança do agent · (3) assumir conversa (agent pausado), devolve
 - **Back:** Node (Route Handlers do Next.js em runtime Node) + **Neon** (Postgres serverless) via
   `@neondatabase/serverless` + Drizzle ORM/migrações.
 - **Deploy:** Vercel (projetos separados para o app e para o serviço de chamados; Neon com branch por preview).
-- **Modelo:** SDK `@anthropic-ai/sdk` com tool use, streaming e prompt caching.
+- **Agent:** Mastra (`@mastra/core`). LLM por `AGENT_MODEL` (`provedor/modelo`); padrão gratuito `google/gemini-2.5-flash` (ver ADR 0004).
 - **Testes:** Vitest (unidade/integração), Playwright (e2e), evals do agent.
 - **Monorepo:** pnpm workspaces.
 
@@ -71,17 +71,17 @@ apps/tickets      Serviço de chamados simulado (Next.js só com Route Handlers)
 packages/tickets-client  Cliente HTTP do serviço de chamados: timeout, retry com backoff/Retry-After,
                   idempotency key repetida nas tentativas; nunca lança — devolve CallResult com
                   tentativas e duração (vão para o DecisionTrace). Contrato em shared/tickets-api.ts.
-packages/agent    Loop do agent (runTurn): prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
-                  nem a fetch — recebe Model e TicketsClient injetados. Regras que não dependem do
+packages/agent    Agent Mastra (runTurn): prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
+                  nem a fetch — recebe o Agent e o TicketsClient injetados. Regras que não dependem do
                   modelo ficam em código: rascunho + confirmação em mensagem posterior, trava de
                   duplicidade, transferência automática (confiança < 0.6, chamado crítico, recusa).
-                  Testes com modelo roteirizado (src/testing.ts); evals com modelo real em
-                  evals/run.ts (custam dinheiro: peça autorização antes de rodar).
+                  Testes com o mock de modelo do Mastra (src/testing.ts); evals com modelo real em
+                  evals/run.ts (grátis no Gemini; respeitam o limite por minuto).
 packages/shared   Contratos zod (Ticket, Conversation, Message, DecisionTrace…), rótulos pt-BR e regras
                   puras do Anexo A (sla.ts: prazos/vencimento; conversation.ts: ciclo e pausa).
 packages/db       Schema Drizzle, migrações e repositório do banco da aplicação (sessões, conversas,
                   mensagens, traces).
-docs/             Anexos, specs de design, ADRs (0001 camadas, 0002 dados, 0003 prazos).
+docs/             Anexos, specs de design, ADRs (0001 camadas, 0002 dados, 0003 prazos, 0004 Mastra/LLM).
 ```
 
 ### Convenções da base
@@ -109,7 +109,7 @@ docs/             Anexos, specs de design, ADRs (0001 camadas, 0002 dados, 0003 
 - **Fora de TI → redirecionar**, sem abrir chamado.
 - **Todo turno do agent gera um `DecisionTrace`** persistido (entendimento, intenção, ações + resultado,
   confiança, justificativa, regra do Anexo A aplicada, tokens). A UI renderiza a partir dele, não de texto livre.
-- **Custo por conversa:** prompt caching do system prompt + Anexo A, modelo menor para tarefas simples quando
+- **Custo por conversa:** zero no plano gratuito; prefixo estável (instruções + ferramentas) e histórico só anexado para cache, modelo leve quando
   bastar, histórico resumido em conversas longas. Registrar tokens por turno no trace.
 
 ## Como trabalhar aqui

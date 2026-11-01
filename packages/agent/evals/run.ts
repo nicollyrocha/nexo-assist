@@ -1,12 +1,12 @@
 import type { MessageBlock, TicketDraft } from "@nexo/shared";
-import { anthropicModel, type Effort } from "../src/model";
+import { createNexoAgent, modelFromEnv } from "../src/model";
 import { initialAgentState, runTurn, type TurnResult } from "../src/run-turn";
 import { ana, fakeTickets } from "../src/testing";
 
 // Evals do agent com o modelo real e o serviço de chamados em memória (dados do Anexo B).
 // Cada caso é corrigido por código a partir do DecisionTrace e dos blocos — sem LLM-juiz.
-// Uso: pnpm --filter @nexo/agent eval [filtro]   (lê ANTHROPIC_API_KEY de apps/web/.env.local)
-// Variáveis opcionais: AGENT_MODEL, AGENT_EFFORT.
+// Uso: pnpm --filter @nexo/agent eval [filtro]   (lê AGENT_MODEL e a chave do provedor de apps/web/.env.local)
+// Com o Gemini no plano gratuito não há custo; a pausa entre casos (EVAL_DELAY_MS) respeita o limite por minuto.
 
 type Check = [label: string, ok: boolean];
 type Case = { id: string; message: string; checks: (r: TurnResult) => Check[] };
@@ -131,23 +131,23 @@ const CASES: Case[] = [
   },
 ];
 
-// Preços por milhão de tokens (Claude Opus 5.5). Ajuste se trocar AGENT_MODEL.
-const PRICE = { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 };
-
 const filter = process.argv[2];
-const model = anthropicModel({
-  model: process.env.AGENT_MODEL,
-  effort: (process.env.AGENT_EFFORT as Effort | undefined) ?? undefined,
-});
+const { config, id: modelId } = modelFromEnv();
+const agent = createNexoAgent(config);
+const delayMs = Number(process.env.EVAL_DELAY_MS ?? 15_000);
+console.log(`Modelo: ${modelId}`);
 
 let passed = 0;
 let total = 0;
-let cost = 0;
-for (const c of CASES.filter((c) => !filter || c.id.includes(filter))) {
+let tokens = 0;
+const selected = CASES.filter((c) => !filter || c.id.includes(filter));
+for (const [i, c] of selected.entries()) {
+  if (i > 0) await new Promise((r) => setTimeout(r, delayMs));
   const tickets = fakeTickets(now);
   const started = Date.now();
   const result = await runTurn({
-    model,
+    agent,
+    modelId,
     tickets: tickets.client,
     employee: ana,
     conversationId: `eval-${c.id}`,
@@ -156,19 +156,17 @@ for (const c of CASES.filter((c) => !filter || c.id.includes(filter))) {
     now,
   });
   const u = result.trace.usage;
-  const turnCost =
-    (u.inputTokens * PRICE.input + u.outputTokens * PRICE.output + u.cacheReadTokens * PRICE.cacheRead + u.cacheWriteTokens * PRICE.cacheWrite) / 1e6;
-  cost += turnCost;
+  tokens += u.inputTokens + u.outputTokens;
 
   const checks = c.checks(result);
   const ok = checks.every(([, v]) => v);
   passed += ok ? 1 : 0;
   total++;
-  console.log(`\n${ok ? "✓" : "✗"} ${c.id}  (${((Date.now() - started) / 1000).toFixed(1)}s, US$ ${turnCost.toFixed(4)})`);
+  console.log(`\n${ok ? "✓" : "✗"} ${c.id}  (${((Date.now() - started) / 1000).toFixed(1)}s, ${u.inputTokens} tokens de entrada / ${u.outputTokens} de saída)`);
   for (const [label, v] of checks) if (!v) console.log(`    ✗ ${label}`);
   console.log(`    ações: ${result.trace.actions.map((a) => a.tool).join(" → ") || "—"}  |  ${result.trace.intent} → ${result.trace.outcome}  |  confiança ${result.trace.confidence.score}`);
   console.log(`    resposta: ${result.reply.replace(/\s+/g, " ").slice(0, 220)}`);
 }
 
-console.log(`\n${passed}/${total} casos ok · custo total US$ ${cost.toFixed(3)} · média US$ ${(cost / Math.max(total, 1)).toFixed(4)} por turno`);
+console.log(`\n${passed}/${total} casos ok · ${tokens} tokens no total · média de ${Math.round(tokens / Math.max(total, 1))} por turno`);
 process.exitCode = passed === total ? 0 : 1;

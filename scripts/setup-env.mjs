@@ -14,7 +14,9 @@ const files = {
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
 
-ANTHROPIC_API_KEY=
+# LLM do agent (Mastra, formato provedor/modelo). Padrão gratuito: Gemini do Google AI Studio.
+AGENT_MODEL=google/gemini-2.5-flash
+GOOGLE_GENERATIVE_AI_API_KEY=
 SESSION_SECRET=${secret()}
 
 TICKETS_SERVICE_URL=http://localhost:3001

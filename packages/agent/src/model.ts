@@ -1,59 +1,38 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { Agent } from "@mastra/core/agent";
+import { SYSTEM_PROMPT } from "./prompt";
+import { createNexoTools } from "./tools";
 
-export type MessageParam = Anthropic.Beta.BetaMessageParam;
-export type Message = Anthropic.Beta.BetaMessage;
+export type ModelConfig = ConstructorParameters<typeof Agent>[0]["model"];
 
-export type ModelRequest = {
-  system: Anthropic.Beta.BetaTextBlockParam[];
-  tools: Anthropic.Beta.BetaTool[];
-  messages: MessageParam[];
-};
-
-/** Fronteira com o LLM: o loop do agent só conhece esta interface (testes usam um modelo roteirizado). */
-export interface Model {
-  readonly id: string;
-  complete(request: ModelRequest, onText: (delta: string) => void): Promise<Message>;
-}
-
-export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
-
-export type AnthropicModelOptions = {
-  client?: Anthropic;
-  model?: string;
-  effort?: Effort;
-  maxTokens?: number;
-};
+/** Padrão gratuito: Gemini Flash pelo Google AI Studio (chave em GOOGLE_GENERATIVE_AI_API_KEY). */
+export const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
 /**
- * Claude via streaming. Custo por conversa:
- * - tools + system estático ficam em cache (prefixo idêntico para todo funcionário e turno);
- * - cache automático no fim do histórico, que é só anexado (nunca reescrito);
- * - `effort` baixo por padrão: atendimento é conversa curta, não raciocínio longo.
- * Recusa de segurança é tratada no servidor com `fallbacks: "default"`.
+ * Escolhe o modelo pelo ambiente, no formato `provedor/modelo` do model router do Mastra:
+ * - AGENT_MODEL=google/gemini-2.5-flash        (GOOGLE_GENERATIVE_AI_API_KEY)
+ * - AGENT_MODEL=groq/openai/gpt-oss-120b       (GROQ_API_KEY)
+ * - AGENT_MODEL=openrouter/<modelo>:free       (OPENROUTER_API_KEY)
+ * - AGENT_MODEL=anthropic/claude-haiku-5-5     (ANTHROPIC_API_KEY)
+ * - AGENT_MODEL=ollama/qwen3:8b + AGENT_MODEL_URL=http://localhost:11434/v1  (local, sem chave)
  */
-export function anthropicModel(options: AnthropicModelOptions = {}): Model {
-  const client = options.client ?? new Anthropic();
-  const model = options.model ?? "claude-opus-5-5";
-  const effort = options.effort ?? "low";
-  const maxTokens = options.maxTokens ?? 16_000;
-
+export function modelFromEnv(env: NodeJS.ProcessEnv = process.env): { config: ModelConfig; id: string } {
+  const id = env.AGENT_MODEL || DEFAULT_MODEL;
+  const url = env.AGENT_MODEL_URL;
   return {
-    id: model,
-    async complete(request, onText) {
-      const stream = client.beta.messages.stream({
-        model,
-        max_tokens: maxTokens,
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        thinking: { type: "adaptive" },
-        output_config: { effort },
-        cache_control: { type: "ephemeral" },
-        system: request.system,
-        tools: request.tools,
-        messages: request.messages,
-      });
-      stream.on("text", onText);
-      return stream.finalMessage();
-    },
+    id,
+    config: url ? { id: id as `${string}/${string}`, url, apiKey: env.AGENT_MODEL_API_KEY ?? "local" } : id,
   };
 }
+
+/** O agent do Nexo Assist no Mastra: instruções estáticas + ferramentas; o contexto do turno vai no RequestContext. */
+export function createNexoAgent(model: ModelConfig) {
+  return new Agent({
+    id: "nexo-assist",
+    name: "Nexo Assist",
+    instructions: SYSTEM_PROMPT,
+    model,
+    tools: createNexoTools(),
+  });
+}
+
+export type NexoAgent = ReturnType<typeof createNexoAgent>;

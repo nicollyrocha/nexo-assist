@@ -1,18 +1,18 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import type { Employee, HelpArticle, Ticket, TicketWithEvents } from "@nexo/shared";
 import type { CallResult, TicketsClient } from "@nexo/tickets-client";
-import type { Message, Model, ModelRequest } from "./model";
+import { MastraLanguageModelV2Mock } from "@mastra/core/test-utils/llm-mock";
+import { createNexoAgent } from "./model";
 
-// Dublês para testar o loop do agent sem rede: um modelo que segue um roteiro e um serviço de
-// chamados em memória com as mesmas regras de privacidade do real.
+// Dublês para testar o agent sem rede: um modelo que segue um roteiro (mock de modelo do Mastra,
+// passando pelo loop real de ferramentas) e um serviço de chamados em memória com as mesmas regras
+// de privacidade do real.
 
-type Block = Anthropic.Beta.BetaContentBlock;
-type Step = Block[] | { refusal: true } | ((request: ModelRequest) => Block[]);
+type Block = { kind: "tool"; name: string; input: unknown } | { kind: "text"; value: string };
+type ModelCall = MastraLanguageModelV2Mock["doStreamCalls"][number];
+type Step = Block[] | { refusal: true } | ((call: ModelCall) => Block[]);
 
-let seq = 0;
-export const toolUse = (name: string, input: unknown): Block =>
-  ({ type: "tool_use", id: `tu_${++seq}`, name, input, caller: { type: "direct" } }) as unknown as Block;
-export const text = (value: string): Block => ({ type: "text", text: value, citations: null }) as unknown as Block;
+export const toolUse = (name: string, input: unknown): Block => ({ kind: "tool", name, input });
+export const text = (value: string): Block => ({ kind: "text", value });
 
 export const decision = (overrides: Record<string, unknown> = {}) =>
   toolUse("register_decision", {
@@ -30,34 +30,42 @@ export const decision = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   });
 
-export function scriptedModel(steps: Step[]) {
-  const requests: ModelRequest[] = [];
-  const model: Model = {
-    id: "modelo-roteirizado",
-    async complete(request, onText) {
-      requests.push(structuredClone(request));
+let seq = 0;
+const usage = { inputTokens: 100, outputTokens: 20, totalTokens: 120, cachedInputTokens: 80 };
+
+/** Agent do Mastra com um modelo roteirizado: cada passo do roteiro é uma resposta do modelo. */
+export function scriptedAgent(steps: Step[]) {
+  const model = new MastraLanguageModelV2Mock({
+    modelId: "modelo-roteirizado",
+    doStream: async (call) => {
       const step = steps.shift();
       if (!step) throw new Error("Roteiro do modelo acabou");
-      if ("refusal" in step) return message([], "refusal");
-      const content = typeof step === "function" ? step(request) : step;
-      for (const b of content) if (b.type === "text") onText(b.text);
-      return message(content, content.some((b) => b.type === "tool_use") ? "tool_use" : "end_turn");
+      const parts: unknown[] = [{ type: "stream-start", warnings: [] }];
+      if ("refusal" in step) {
+        parts.push({ type: "finish", finishReason: "content-filter", usage });
+      } else {
+        const blocks = typeof step === "function" ? step(call) : step;
+        for (const b of blocks) {
+          if (b.kind === "text") {
+            const id = `t${++seq}`;
+            parts.push({ type: "text-start", id }, { type: "text-delta", id, delta: b.value }, { type: "text-end", id });
+          } else {
+            parts.push({ type: "tool-call", toolCallId: `call_${++seq}`, toolName: b.name, input: JSON.stringify(b.input) });
+          }
+        }
+        parts.push({ type: "finish", finishReason: blocks.some((b) => b.kind === "tool") ? "tool-calls" : "stop", usage });
+      }
+      return {
+        stream: new ReadableStream({
+          start(controller) {
+            for (const p of parts) controller.enqueue(p as never);
+            controller.close();
+          },
+        }),
+      };
     },
-  };
-  return { model, requests };
-}
-
-function message(content: Block[], stop_reason: Message["stop_reason"]): Message {
-  return {
-    id: "msg",
-    type: "message",
-    role: "assistant",
-    model: "modelo-roteirizado",
-    content,
-    stop_reason,
-    stop_sequence: null,
-    usage: { input_tokens: 100, output_tokens: 20, cache_read_input_tokens: 80, cache_creation_input_tokens: 0 },
-  } as unknown as Message;
+  });
+  return { agent: createNexoAgent(model), calls: model.doStreamCalls };
 }
 
 export const ana: Employee = {
@@ -86,7 +94,8 @@ export function fakeTickets(now: Date, opts: { unavailable?: boolean } = {}) {
     { ...base, id: "INC-20320", type: "INC", title: "VPN cai a cada 10 minutos", category: "rede_vpn", priority: "alta", status: "aberto", requesterId: "emp-carla", openedAt: iso(day / 12), updatedAt: iso(day / 12), dueAt: iso(-day / 6), events: [] },
   ];
   const articles: HelpArticle[] = [
-    { id: "KB-001", title: "VPN com erro 809", body: "Reinstale o cliente de VPN. Vale só para Windows 10; no Windows 11, abra um chamado.", category: "rede_vpn" },
+    { id: "KB-001", title: "VPN com erro 809", body: "Reinstale o cliente de VPN pelo portal de softwares e reinicie. Vale só para Windows 10; no Windows 11, abra um chamado.", category: "rede_vpn" },
+    { id: "KB-002", title: "Horário do service desk", body: "De segunda a sexta, das 8h às 18h. Chamados críticos têm plantão 24 horas.", category: "outros" },
   ];
   const calls: string[] = [];
   const mine = (employeeId: string) => tickets.filter((t) => t.requesterId === employeeId);
@@ -97,11 +106,15 @@ export function fakeTickets(now: Date, opts: { unavailable?: boolean } = {}) {
     calls.push(name);
     return Promise.resolve(opts.unavailable ? down<T>() : ok(fn()));
   };
+  const words = (q: string) => q.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [];
 
   const client: TicketsClient = {
     findEmployeeByEmail: () => guard("findEmployeeByEmail", () => null),
     findAnalystByEmail: () => guard("findAnalystByEmail", () => null),
-    searchHelp: (q) => guard("searchHelp", () => (/vpn|809/i.test(q) ? articles : [])),
+    searchHelp: (q) =>
+      guard("searchHelp", () =>
+        articles.filter((a) => words(q).some((w) => `${a.title} ${a.body}`.toLowerCase().includes(w))),
+      ),
     listTickets: (employeeId, o = {}) =>
       guard("listTickets", () => mine(employeeId).filter((t) => !o.openOnly || !["resolvido", "fechado"].includes(t.status))),
     getTicket: (employeeId, id) => guard("getTicket", () => mine(employeeId).find((t) => t.id === id) ?? null),

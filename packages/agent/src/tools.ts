@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import { createTool } from "@mastra/core/tools";
 import { AFFECTED, CATEGORIES, INTENTS, PRIORITIES, RULES, TICKET_TYPES, TRANSFER_REASONS } from "@nexo/shared";
 import { z } from "zod";
 
@@ -89,16 +89,33 @@ const DESCRIPTIONS: Record<ToolName, string> = {
     "Registra o que você entendeu, decidiu e por quê. Obrigatório uma vez por turno, antes da resposta final.",
 };
 
-function jsonSchema(schema: z.ZodType): Anthropic.Tool.InputSchema {
-  const { $schema: _ignored, ...rest } = z.toJSONSchema(schema) as Record<string, unknown>;
-  return rest as Anthropic.Tool.InputSchema;
+/** Contexto de um turno, entregue às ferramentas pelo RequestContext do Mastra. */
+export interface TurnTools {
+  execute(name: ToolName, input: unknown): Promise<string>;
 }
+export const TURN_KEY = "nexo-turn";
 
-export const TOOL_DEFINITIONS: Anthropic.Tool[] = (Object.keys(ToolInputs) as ToolName[]).map((name) => ({
-  name,
-  description: DESCRIPTIONS[name],
-  input_schema: jsonSchema(ToolInputs[name]),
-}));
+/**
+ * Ferramentas do Mastra. Cada uma só delega para o turno em andamento (run-turn.ts), onde ficam
+ * as regras; assim o agent é criado uma vez e cada requisição carrega o próprio funcionário.
+ */
+export function createNexoTools() {
+  return Object.fromEntries(
+    (Object.keys(ToolInputs) as ToolName[]).map((name) => [
+      name,
+      createTool({
+        id: name,
+        description: DESCRIPTIONS[name],
+        inputSchema: ToolInputs[name],
+        execute: async (input, context) => {
+          const turn = context?.requestContext?.get(TURN_KEY) as TurnTools | undefined;
+          if (!turn) throw new Error("Ferramenta chamada fora de um turno do Nexo Assist.");
+          return turn.execute(name, input);
+        },
+      }),
+    ]),
+  );
+}
 
 /** Rótulo do chip de ação, no passado, como no protótipo. */
 export const ACTION_LABELS: Record<Exclude<ToolName, "register_decision">, string> = {

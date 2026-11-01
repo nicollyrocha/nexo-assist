@@ -1,22 +1,23 @@
 import { DecisionTrace } from "@nexo/shared";
 import { describe, expect, it } from "vitest";
 import { initialAgentState, runTurn, type AgentState, type TurnInput } from "./run-turn";
-import { ana, decision, fakeTickets, scriptedModel, text, toolUse } from "./testing";
+import { ana, decision, fakeTickets, scriptedAgent, text, toolUse } from "./testing";
 
 const now = new Date("2026-11-04T15:00:00-03:00");
 let ids = 0;
 
 function turn(
-  steps: Parameters<typeof scriptedModel>[0],
+  steps: Parameters<typeof scriptedAgent>[0],
   userMessage: string,
   opts: { state?: AgentState; tickets?: ReturnType<typeof fakeTickets> } = {},
 ) {
   const tickets = opts.tickets ?? fakeTickets(now);
-  const { model, requests } = scriptedModel(steps);
+  const { agent, calls } = scriptedAgent(steps);
   const streamed: string[] = [];
   const chips: string[] = [];
   const input: TurnInput = {
-    model,
+    agent,
+    modelId: "modelo-roteirizado",
     tickets: tickets.client,
     employee: ana,
     conversationId: "conv-1",
@@ -27,7 +28,7 @@ function turn(
     onAction: (a) => chips.push(a.label),
     newId: () => `id-${++ids}`,
   };
-  return runTurn(input).then((result) => ({ result, requests, streamed, chips, tickets }));
+  return runTurn(input).then((result) => ({ result, calls, streamed, chips, tickets }));
 }
 
 describe("dúvida resolvida no chat (história 1)", () => {
@@ -54,7 +55,7 @@ describe("dúvida resolvida no chat (história 1)", () => {
 
 describe("consulta de chamado (história 2)", () => {
   it("mostra os chamados para seleção e informa o prazo calculado pelo código", async () => {
-    const { result, requests } = await turn(
+    const { result, calls } = await turn(
       [
         [toolUse("list_my_tickets", { only_open: true })],
         [decision({ intent: "consultar_chamado", show_ticket_ids: ["INC-20311", "INC-20298"], ticket_selection_prompt: "Sobre qual deles?" })],
@@ -63,7 +64,7 @@ describe("consulta de chamado (história 2)", () => {
       "como está meu chamado?",
     );
 
-    const toolResult = JSON.stringify(requests[1]!.messages.at(-1));
+    const toolResult = JSON.stringify(calls[1]!.prompt.at(-1));
     expect(toolResult).toContain("VENCIDO desde");
     expect(toolResult).not.toContain("INC-20320"); // chamado da Carla
     expect(result.blocks[0]).toMatchObject({ kind: "ticket_selection", prompt: "Sobre qual deles?" });
@@ -80,17 +81,17 @@ describe("consulta de chamado (história 2)", () => {
 
 describe("privacidade", () => {
   it("chamado de outro funcionário não é entregue ao modelo", async () => {
-    const { requests } = await turn(
+    const { calls } = await turn(
       [[toolUse("get_ticket", { ticket_id: "INC-20320" })], [decision()], [text("Não encontrei esse chamado.")]],
       "me fala do INC-20320",
     );
-    expect(JSON.stringify(requests[1]!.messages.at(-1))).toContain("não está entre os chamados deste funcionário");
+    expect(JSON.stringify(calls[1]!.prompt.at(-1))).toContain("não está entre os chamados deste funcionário");
   });
 
   it("nenhuma ferramenta aceita id de funcionário vindo do modelo", async () => {
-    const { requests } = await turn([[decision()], [text("oi")]], "oi");
-    for (const tool of requests[0]!.tools) {
-      expect(JSON.stringify(tool.input_schema)).not.toMatch(/employee|requester|funcionario_id/i);
+    const { calls } = await turn([[decision()], [text("oi")]], "oi");
+    for (const tool of calls[0]!.tools ?? []) {
+      expect(JSON.stringify(tool)).not.toMatch(/employee|requester|funcionario_id/i);
     }
   });
 });
@@ -131,7 +132,7 @@ describe("abrir chamado conversando (história 4)", () => {
     const second = await turn(
       [
         (req) => {
-          expect(JSON.stringify(req.messages.at(-1))).toContain(`Proposta pendente de confirmação: ${actionId}`);
+          expect(JSON.stringify(req.prompt.at(-1))).toContain(`Proposta pendente de confirmação: ${actionId}`);
           return [toolUse("confirm_pending_action", { action_id: actionId })];
         },
         [decision({ intent: "confirmar_rascunho" })],
@@ -152,7 +153,7 @@ describe("abrir chamado conversando (história 4)", () => {
       [
         [toolUse("propose_new_ticket", newTicketArgs)],
         (req) => {
-          const pending = JSON.stringify(req.messages.at(-1)).match(/proposta (id-\d+)/)![1];
+          const pending = JSON.stringify(req.prompt.at(-1)).match(/proposta (id-\d+)/)![1];
           return [toolUse("confirm_pending_action", { action_id: pending })];
         },
         [decision({ intent: "abrir_chamado" })],
@@ -179,7 +180,7 @@ describe("abrir chamado conversando (história 4)", () => {
 describe("sem duplicidade", () => {
   it("bloqueia rascunho novo quando há chamado aberto da mesma categoria, até o agent justificar", async () => {
     const draft = { ...newTicketArgs, category: "hardware", title: "Notebook muito lento", type: "INC" };
-    const { result, requests } = await turn(
+    const { result, calls } = await turn(
       [
         [toolUse("propose_new_ticket", draft)],
         [toolUse("propose_new_ticket", { ...draft, not_duplicate_reason: "É o monitor, não o notebook do INC-20311." })],
@@ -188,7 +189,7 @@ describe("sem duplicidade", () => {
       ],
       "meu monitor parou",
     );
-    expect(JSON.stringify(requests[1]!.messages.at(-1))).toContain("INC-20311");
+    expect(JSON.stringify(calls[1]!.prompt.at(-1))).toContain("INC-20311");
     expect(result.trace.alternativesDiscarded.join(" ")).toContain("É o monitor");
     expect(result.blocks.filter((b) => b.kind === "draft")).toHaveLength(1);
   });
@@ -279,13 +280,13 @@ describe("encaminhamento ao analista (história 5)", () => {
 describe("falhas", () => {
   it("legado fora do ar: registra o erro com as tentativas e não finge que fez", async () => {
     const tickets = fakeTickets(now, { unavailable: true });
-    const { result, requests } = await turn(
+    const { result, calls } = await turn(
       [[toolUse("list_my_tickets", { only_open: true })], [decision({ intent: "consultar_chamado" })], [text("O sistema está fora do ar.")]],
       "meus chamados",
       { tickets },
     );
     expect(result.trace.actions[0]).toMatchObject({ outcome: "erro", attempts: 4 });
-    expect(JSON.stringify(requests[1]!.messages.at(-1))).toContain("indisponível");
+    expect(JSON.stringify(calls[1]!.prompt.at(-1))).toContain("indisponível");
   });
 
   it("recusa do modelo vira transferência e resposta honesta", async () => {
@@ -302,29 +303,32 @@ describe("falhas", () => {
   });
 
   it("entrada inválida de ferramenta volta como erro para o modelo corrigir", async () => {
-    const { requests } = await turn(
+    const { calls } = await turn(
       [[toolUse("get_ticket", { ticket_id: "20311" })], [decision()], [text("ok")]],
       "chamado 20311",
     );
-    expect(JSON.stringify(requests[1]!.messages.at(-1))).toContain("Entrada inválida");
+    // O Mastra valida a entrada contra o schema zod e devolve o erro ao modelo, sem executar.
+    expect(JSON.stringify(calls[1]!.prompt.at(-1))).toContain("Tool input validation failed");
   });
 });
 
 describe("continuidade (história 6) e cache", () => {
   it("histórico só cresce entre turnos e o resumo anterior chega ao modelo", async () => {
     const first = await turn([[decision()], [text("Oi!")]], "oi", { state: initialAgentState("Ontem: INC-20311 vencido, pediu retorno.") });
-    expect(JSON.stringify(first.requests[0]!.messages[0])).toContain("Ontem: INC-20311 vencido");
+    expect(JSON.stringify(first.calls[0]!.prompt)).toContain("Ontem: INC-20311 vencido");
 
     const second = await turn([[decision()], [text("Claro.")]], "e agora?", { state: first.result.state });
-    const prefix = second.requests[0]!.messages.slice(0, first.result.state.history.length);
+    const prefix = second.result.state.history.slice(0, first.result.state.history.length);
     expect(prefix).toEqual(first.result.state.history);
+    expect(JSON.stringify(second.calls[0]!.prompt)).toContain("Oi!");
     expect(second.result.state.carryover).toBeNull();
   });
 
-  it("o prompt de sistema estático é o primeiro bloco e está marcado para cache", async () => {
-    const { requests } = await turn([[decision()], [text("oi")]], "oi");
-    expect(requests[0]!.system[0]).toMatchObject({ cache_control: { type: "ephemeral" } });
-    expect(requests[0]!.system[0]!.text).not.toContain(ana.email);
-    expect(requests[0]!.system[1]!.text).toContain(ana.name);
+  it("as instruções estáticas vêm primeiro e os dados do funcionário ficam fora delas", async () => {
+    const { calls } = await turn([[decision()], [text("oi")]], "oi");
+    const systems = calls[0]!.prompt.filter((m) => m.role === "system").map((m) => String(m.content));
+    expect(systems[0]).toContain("Você é o Nexo Assist");
+    expect(systems[0]).not.toContain(ana.email);
+    expect(systems.some((s) => s.includes(ana.name))).toBe(true);
   });
 });

@@ -10,10 +10,12 @@ Route Handlers de `apps/web`, por `packages/agent` e por `apps/tickets`.
 1. Leia `CLAUDE.md` e o Anexo A, incluindo as notas de implementação. Regras de tipo, categoria,
    prioridade, prazo, duplicidade, transferência, privacidade e escopo vêm **somente** de lá.
 2. Contratos primeiro em `packages/shared` (zod); combine mudanças de schema com o `database-specialist`.
-3. Para qualquer uso da API da Anthropic, carregue a skill `claude-api` (modelos, tool use, caching, streaming).
+3. O agent usa **Mastra** (`@mastra/core`). Antes de mexer, leia a doc que vem no pacote:
+   `node_modules/@mastra/core/dist/docs/references/` (agents, tools, streaming, request-context). Ela vale
+   mais que a memória de treino. Modelo por `AGENT_MODEL` (`provedor/modelo`); padrão gratuito Gemini (ADR 0004).
 
 ## Agent (`packages/agent`)
-- Loop com tool use, sem I/O próprio: recebe clientes injetados. Ferramentas mínimas e bem descritas:
+- Agent Mastra com ferramentas `createTool` que só delegam para o turno (via `RequestContext`); sem I/O próprio. Ferramentas mínimas e bem descritas:
   `search_help_center`, `list_my_tickets`, `get_ticket`, `propose_ticket_draft`, `create_ticket` e
   `update_ticket` (só após confirmação), `reopen_ticket` (resolvido há ≤7 dias), `transfer_to_analyst`.
   O `employeeId` é injetado pelo servidor — nunca é parâmetro do modelo.
@@ -26,8 +28,9 @@ Route Handlers de `apps/web`, por `packages/agent` e por `apps/tickets`.
 - Antes de criar: buscar chamado aberto sobre o mesmo problema → oferecer atualizar em vez de duplicar.
 - Transferir quando: funcionário pede, caso crítico, chamado vencido ou confiança baixa — com resumo pronto
   para o analista. Fora de TI → redirecionar.
-- Custo: system prompt + Anexo A + artigos com prompt caching; modelo menor para tarefas simples quando
-  bastar; histórico resumido em conversas longas; respostas curtas. Medir tokens por turno.
+- Custo zero no plano gratuito: instruções e ferramentas estáveis (prefixo em cache), histórico só anexado,
+  respostas curtas, resumo em conversas longas. Medir tokens por turno; erro/limite do provedor vira resposta
+  honesta + transferência.
 - Evals em `packages/agent/evals`: mensagens de funcionário com esperado (intenção, ação, tipo/categoria/
   prioridade, transferir ou não, redirecionar). Rodar antes de mudar prompt ou ferramentas.
 
