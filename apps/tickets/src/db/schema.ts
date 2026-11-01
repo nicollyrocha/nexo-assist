@@ -87,6 +87,8 @@ export const ticketEvents = pgTable(
     authorId: text("author_id").notNull(),
     body: text("body").notNull(),
     createdAt: ts("created_at").notNull().defaultNow(),
+    /** Complemento repetido por retry do cliente não vira dois comentários. */
+    idempotencyKey: text("idempotency_key").unique(),
   },
   (t) => [index("ticket_events_ticket_idx").on(t.ticketId, t.createdAt)],
 );
