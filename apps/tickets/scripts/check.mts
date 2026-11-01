@@ -8,7 +8,13 @@ for (const name of ["TICKETS_DATABASE_URL", "TICKETS_DATABASE_URL_UNPOOLED"] as 
     process.exitCode = 1;
     continue;
   }
-  const [row] = await neon(url)`select current_database() as db,
+  try {
+    const [row] = await neon(url)`select current_database() as db,
     (select count(*) from information_schema.tables where table_schema = 'public')::int as tables`;
-  console.log(`✓ ${name}: banco ${row?.db}, ${row?.tables} tabelas`);
+    console.log(`✓ ${name}: banco ${row?.db}, ${row?.tables} tabelas`);
+  } catch (error) {
+    // A mensagem do Neon não inclui a connection string.
+    console.error(`✗ ${name}: ${error instanceof Error ? error.message : error}`);
+    process.exitCode = 1;
+  }
 }
