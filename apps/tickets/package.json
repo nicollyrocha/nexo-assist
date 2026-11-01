@@ -15,21 +15,22 @@
     "db:check": "tsx --env-file-if-exists=.env.local scripts/check.mts"
   },
   "dependencies": {
-    "next": "16.4.3",
-    "@nexo/shared": "workspace:*",
-    "zod": "^4.6.7",
     "@neondatabase/serverless": "^1.2.0",
-    "drizzle-orm": "^0.45.4"
+    "@nexo/shared": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "next": "16.4.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@nexo/tickets-client": "workspace:*",
     "@types/node": "^22.20.5",
     "@types/react": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
-    "@electric-sql/pglite": "^0.5.14",
-    "drizzle-kit": "^0.31.11",
-    "vitest": "^4.1.12",
-    "tsx": "^4.23.15"
+    "vitest": "^4.1.12"
   }
 }

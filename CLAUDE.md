@@ -68,6 +68,9 @@ apps/web          Next.js: telas (login, chat, console) + Route Handlers (auth, 
 apps/tickets      Serviço de chamados simulado (Next.js só com Route Handlers): banco próprio no Neon
                   (src/db: schema, repo, seeds), falhas simuladas do legado. Deploy separado na Vercel.
                   Também hospeda a central de ajuda (full-text em português).
+packages/tickets-client  Cliente HTTP do serviço de chamados: timeout, retry com backoff/Retry-After,
+                  idempotency key repetida nas tentativas; nunca lança — devolve CallResult com
+                  tentativas e duração (vão para o DecisionTrace). Contrato em shared/tickets-api.ts.
 packages/agent    (a criar) Loop do agent: prompt, ferramentas, DecisionTrace. Sem acesso direto a banco
                   nem a fetch — recebe clientes injetados (tickets, central de ajuda, trace store).
 packages/shared   Contratos zod (Ticket, Conversation, Message, DecisionTrace…), rótulos pt-BR e regras

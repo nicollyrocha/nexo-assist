@@ -36,6 +36,9 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.5.14
         version: 0.5.14
+      '@nexo/tickets-client':
+        specifier: workspace:*
+        version: link:../../packages/tickets-client
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
@@ -143,6 +146,25 @@ importers:
       '@date-fns/tz':
         specifier: ^1.5.0
         version: 1.5.0
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.5
+        version: 22.20.5
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.12
+        version: 4.1.12(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/tickets-client:
+    dependencies:
+      '@nexo/shared':
+        specifier: workspace:*
+        version: link:../shared
       zod:
         specifier: ^4.6.7
         version: 4.6.7
