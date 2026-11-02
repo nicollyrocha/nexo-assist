@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@nexo/web",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "tickets",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@nexo/tickets",
+        "dev"
+      ],
+      "port": 3001
+    }
+  ]
+}
