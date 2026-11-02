@@ -44,7 +44,11 @@ describe("login e sessão", () => {
     const ana = await loginAs(ANA);
     expect(ana.setCookie).toMatch(/^nexo_session=.+; Path=\/; Max-Age=\d+; HttpOnly; SameSite=Lax/);
     const res = await loginRoute(request("POST", "/api/auth/login", { body: { email: RAFAEL, password: "x" } }));
-    expect(await res.json()).toMatchObject({ redirectTo: "/console", user: { role: "analista", name: "Rafael Lima", detail: "N2" } });
+    const body = await res.json();
+    expect(body).toMatchObject({ redirectTo: "/console", user: { role: "analista", name: "Rafael Lima", detail: "N2" } });
+    // O id da sessão nunca chega ao JavaScript da página: só no cookie httpOnly.
+    expect(body.user).not.toHaveProperty("sessionId");
+    expect(ana.body.user).not.toHaveProperty("sessionId");
   });
 
   it("e-mail fora dos dados de exemplo → 401 invalid_credentials", async () => {
@@ -179,7 +183,7 @@ describe("agent pausado", () => {
 describe("limite de 30 mensagens por sessão", () => {
   it("a 31ª mensagem vira erro limit_reached, sem gravar e sem chamar o modelo", async () => {
     const ana = await loginAs(ANA);
-    for (let i = 1; i < MAX_MESSAGES_PER_SESSION; i++) await countSessionMessage(web.db, ana.body.user.sessionId);
+    for (let i = 1; i < MAX_MESSAGES_PER_SESSION; i++) await countSessionMessage(web.db, ana.sessionId);
     web.script(helpTurn());
     const last = await send(ana.cookie, "trigésima");
     expect(last[0]).toMatchObject({ type: "saved", messagesUsed: 30 });

@@ -9,11 +9,13 @@ import { SESSION_COOKIE, verifySessionToken } from "./server/session-token";
  */
 export function proxy(req: NextRequest) {
   const secret = process.env.SESSION_SECRET ?? "";
-  const user = secret ? verifySessionToken(req.cookies.get(SESSION_COOKIE)?.value, secret) : null;
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  const user = secret ? verifySessionToken(token, secret) : null;
   const path = req.nextUrl.pathname;
   const area = path.startsWith("/console") ? "analista" : "funcionario";
 
-  if (!user) return NextResponse.redirect(new URL("/", req.url));
+  // Havia cookie, mas inválido ou vencido: o login mostra o aviso de sessão expirada, como nas páginas.
+  if (!user) return NextResponse.redirect(new URL(token ? "/?motivo=sessao" : "/", req.url));
   if (user.role !== area) return NextResponse.redirect(new URL(user.role === "analista" ? "/console" : "/chat", req.url));
   return NextResponse.next();
 }

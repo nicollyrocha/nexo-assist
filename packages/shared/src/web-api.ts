@@ -19,11 +19,16 @@ export const SessionUser = z.object({
 });
 export type SessionUser = z.infer<typeof SessionUser>;
 
+/** O que o navegador recebe de quem está logado. O id da sessão só existe no cookie httpOnly e no servidor. */
+export const PublicUser = SessionUser.omit({ sessionId: true });
+export type PublicUser = z.infer<typeof PublicUser>;
+
 /** POST /api/auth/login — aceita qualquer senha para quem existe nos dados de exemplo. */
 export const LoginInput = z.object({ email: z.email(), password: z.string().min(1) });
 export type LoginInput = z.infer<typeof LoginInput>;
 /** 200 → `{ user, redirectTo }`; 401 → `ApiErrorBody` com code "invalid_credentials". */
-export const LoginResponse = z.object({ user: SessionUser, redirectTo: z.enum(["/chat", "/console"]) });
+export const LoginResponse = z.object({ user: PublicUser, redirectTo: z.enum(["/chat", "/console"]) });
+export type LoginResponse = z.infer<typeof LoginResponse>;
 // POST /api/auth/logout → 204.
 
 export const ApiErrorBody = z.object({
