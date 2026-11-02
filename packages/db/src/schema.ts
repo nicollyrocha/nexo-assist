@@ -54,8 +54,12 @@ export const conversations = pgTable(
     transferReason: transferReason("transfer_reason"),
     summary: text("summary"),
     ticketId: text("ticket_id"),
+    /** Estado do agent entre turnos (rascunho pendente etc.). Opaco aqui: quem tipa é packages/agent. */
+    agentState: jsonb("agent_state").$type<unknown>(),
     /** Controle otimista: dois analistas não assumem a mesma conversa. */
     version: integer("version").notNull().default(0),
+    /** Última mudança de status (ex.: "aguardando desde"); updated_at muda também a cada mensagem. */
+    statusChangedAt: timestamp("status_changed_at", { withTimezone: true }).notNull().defaultNow(),
     createdAt: createdAt(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
