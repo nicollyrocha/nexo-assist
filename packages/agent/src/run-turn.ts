@@ -366,6 +366,8 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
 
   let failed: "erro_modelo" | "bloqueado" | "esgotado" | null = null;
   let usage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+  /** Modelo que de fato respondeu (com cadeia de reserva, pode não ser o primeiro). */
+  let servedBy = input.modelId;
   try {
     const output = await input.agent.stream(messages as never, {
       requestContext,
@@ -382,11 +384,13 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
       cacheReadTokens: full.usage?.cachedInputTokens ?? 0,
       cacheWriteTokens: 0,
     };
+    servedBy = full.response.modelId ?? servedBy;
     if (full.finishReason === "content-filter") failed = "bloqueado";
     else if (full.finishReason === "tool-calls") failed = "esgotado";
     else messages.push(...((full.response.messages ?? []) as HistoryMessage[]));
   } catch (error) {
-    console.error("[agent] falha ao chamar o modelo", error);
+    // Só a mensagem: o erro do provedor carrega o corpo inteiro da requisição.
+    console.error("[agent] falha ao chamar o modelo:", error instanceof Error ? error.message.split("\n")[0] : error);
     failed = "erro_modelo";
   }
 
@@ -480,7 +484,7 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
     rationale: finalDecision.rationale,
     rulesApplied: finalDecision.rules_applied.map((r) => ({ rule: r.rule, explanation: r.explanation })),
     alternativesDiscarded: [...finalDecision.alternatives_discarded, ...alternatives],
-    usage: { model: input.modelId, ...usage, latencyMs: Date.now() - started },
+    usage: { model: servedBy, ...usage, latencyMs: Date.now() - started },
     createdAt: now.toISOString(),
   });
 

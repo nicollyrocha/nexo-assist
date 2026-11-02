@@ -15,7 +15,7 @@ DATABASE_URL=
 DATABASE_URL_UNPOOLED=
 
 # LLM do agent (Mastra, formato provedor/modelo). Padrão gratuito: Gemini do Google AI Studio.
-AGENT_MODEL=google/gemini-2.5-flash
+AGENT_MODEL=google/gemini-3.6-flash,google/gemini-3.5-flash,google/gemini-3.5-flash-lite,google/gemini-3.1-flash-lite
 GOOGLE_GENERATIVE_AI_API_KEY=
 SESSION_SECRET=${secret()}
 

@@ -54,7 +54,7 @@ as de baixa confiança do agent · (3) assumir conversa (agent pausado), devolve
 - **Back:** Node (Route Handlers do Next.js em runtime Node) + **Neon** (Postgres serverless) via
   `@neondatabase/serverless` + Drizzle ORM/migrações.
 - **Deploy:** Vercel (projetos separados para o app e para o serviço de chamados; Neon com branch por preview).
-- **Agent:** Mastra (`@mastra/core`). LLM por `AGENT_MODEL` (`provedor/modelo`); padrão gratuito `google/gemini-2.5-flash` (ver ADR 0004).
+- **Agent:** Mastra (`@mastra/core`). LLM por `AGENT_MODEL` (`provedor/modelo`); padrão gratuito: cadeia de modelos Gemini Flash, somando as cotas por modelo (ver ADR 0004).
 - **Testes:** Vitest (unidade/integração), Playwright (e2e), evals do agent.
 - **Monorepo:** pnpm workspaces.
 

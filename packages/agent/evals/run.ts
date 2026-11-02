@@ -65,7 +65,7 @@ const CASES: Case[] = [
     message: "Como está o chamado do notebook lento?",
     checks: (r) => [
       ["consultou os chamados", tools(r).some((t) => t === "list_my_tickets" || t === "get_ticket")],
-      ["disse que está vencido", /vencid|atrasad|passou do prazo/i.test(r.reply)],
+      ["disse que está vencido", /venc(id|eu)|atrasad|passou do prazo/i.test(r.reply)],
       ["ofereceu analista", /analista/i.test(r.reply) || r.transfer !== null],
     ],
   },
@@ -164,6 +164,7 @@ for (const [i, c] of selected.entries()) {
   total++;
   console.log(`\n${ok ? "✓" : "✗"} ${c.id}  (${((Date.now() - started) / 1000).toFixed(1)}s, ${u.inputTokens} tokens de entrada / ${u.outputTokens} de saída)`);
   for (const [label, v] of checks) if (!v) console.log(`    ✗ ${label}`);
+  console.log(`    modelo: ${result.trace.usage.model}`);
   console.log(`    ações: ${result.trace.actions.map((a) => a.tool).join(" → ") || "—"}  |  ${result.trace.intent} → ${result.trace.outcome}  |  confiança ${result.trace.confidence.score}`);
   console.log(`    resposta: ${result.reply.replace(/\s+/g, " ").slice(0, 220)}`);
 }
