@@ -115,6 +115,16 @@ describe("atender, devolver e encerrar", () => {
     expect(web.modelCalls()).toBe(2);
   });
 
+  it("conversa aguardando atendente pode voltar ao agent sem ser assumida (Tela 4)", async () => {
+    const c = await waitingConversation();
+    expect((await action(returnRoute, juliana, c.id, c.version - 1)).status).toBe(409);
+    const res = await action(returnRoute, juliana, c.id, c.version);
+    expect(res.status).toBe(200);
+    const body = ConsoleConversation.parse(await res.json());
+    expect(body.conversation).toMatchObject({ status: "ativa", assignedAnalystId: null });
+    expect(body.messages.at(-1)!.content).toBe("Juliana Costa devolveu a conversa ao agent · agent retomado");
+  });
+
   it("encerrar exige estar atendendo; depois de encerrada não se assume de novo", async () => {
     const c = await waitingConversation();
     expect((await action(closeRoute, rafael, c.id, c.version)).status).toBe(409);

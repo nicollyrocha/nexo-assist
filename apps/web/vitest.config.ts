@@ -5,7 +5,10 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    // Testes de servidor (.test.ts) rodam em node; os de componente (.test.tsx) declaram
+    // `// @vitest-environment jsdom` no topo do arquivo.
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    setupFiles: ["./src/test/setup.ts"],
     // PGlite com as migrações reais leva alguns segundos para subir.
     testTimeout: 30_000,
     hookTimeout: 30_000,

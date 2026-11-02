@@ -194,14 +194,19 @@ async function requireMine(ctx: AnalystCtx, id: string, version: number): Promis
   return row;
 }
 
-/** Devolver ao agent: em_atendimento → ativa. O agent recebe o que foi falado com o analista. */
+/**
+ * Devolver ao agent: em_atendimento → ativa (só quem atende) ou aguardando_atendente → ativa
+ * (qualquer analista, como na Tela 4). O agent recebe o que foi falado com o analista.
+ */
 export async function returnConversation(ctx: AnalystCtx, id: string, version: number): Promise<ConsoleConversation> {
   const db = ctx.deps.db;
-  await requireMine(ctx, id, version);
+  const current = await requireConversation(ctx, id);
+  const from = current.status === "aguardando_atendente" ? "aguardando_atendente" : "em_atendimento";
+  if (from === "em_atendimento") await requireMine(ctx, id, version);
   const back = await transitionConversation(db, {
     conversationId: id,
     expectedVersion: version,
-    from: "em_atendimento",
+    from,
     to: "ativa",
     analystId: null,
   });
