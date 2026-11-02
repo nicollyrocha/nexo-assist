@@ -47,6 +47,8 @@ export const Conversation = z.object({
   summary: z.string().nullable(),
   /** Chamado em foco na conversa, quando houver. */
   ticketId: z.string().nullable(),
+  /** Controle otimista das ações do console (assumir/devolver/encerrar). */
+  version: z.number().int(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
