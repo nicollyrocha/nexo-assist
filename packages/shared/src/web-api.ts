@@ -60,6 +60,7 @@ export const ConversationView = z.object({
   traces: z.record(z.string(), DecisionTrace),
   /** Analista que está atendendo, quando houver. */
   analystName: z.string().nullable(),
+  analystTier: z.enum(["N1", "N2"]).nullable(),
   messagesUsed: z.number().int(),
   messagesLimit: z.number().int(),
 });
@@ -102,6 +103,8 @@ export const ConversationSummary = z.object({
   employee: Employee.pick({ id: true, name: true, department: true }),
   status: ConversationStatus,
   transferReason: TransferReason.nullable(),
+  /** Chamado em foco na conversa, quando houver. */
+  ticketId: z.string().nullable(),
   assignedAnalystId: z.string().nullable(),
   assignedAnalystName: z.string().nullable(),
   lastMessagePreview: z.string(),

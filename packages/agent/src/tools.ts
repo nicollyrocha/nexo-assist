@@ -121,7 +121,7 @@ export function createNexoTools() {
 export const ACTION_LABELS: Record<Exclude<ToolName, "register_decision">, string> = {
   search_help_center: "buscou na central de ajuda",
   list_my_tickets: "consultou seus chamados",
-  get_ticket: "abriu o chamado",
+  get_ticket: "consultou o chamado",
   propose_new_ticket: "montou o rascunho do chamado",
   propose_ticket_update: "montou a atualização do chamado",
   confirm_pending_action: "registrou no sistema de chamados",
