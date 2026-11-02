@@ -53,6 +53,17 @@ export async function findResumableConversation(db: Db, employeeId: string) {
   return row ?? null;
 }
 
+/** Conversa mais recente do funcionário, inclusive encerrada (para mostrar "encerrada" antes de começar outra). */
+export async function findLatestConversation(db: Db, employeeId: string) {
+  const [row] = await db
+    .select()
+    .from(schema.conversations)
+    .where(eq(schema.conversations.employeeId, employeeId))
+    .orderBy(desc(schema.conversations.updatedAt))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function listMessagesForEmployee(db: Db, employeeId: string, conversationId: string) {
   const conversation = await getConversationForEmployee(db, employeeId, conversationId);
   if (!conversation) return null;
@@ -80,6 +91,8 @@ type Transition = {
   analystId?: string | null;
   transferReason?: TransferReason | null;
   summary?: string | null;
+  /** Chamado em foco (ex.: o chamado levado ao analista na transferência). */
+  ticketId?: string | null;
 };
 
 /**
@@ -98,6 +111,7 @@ export async function transitionConversation(db: Db, t: Transition): Promise<Con
       ...(t.analystId !== undefined && { assignedAnalystId: t.analystId }),
       ...(t.transferReason !== undefined && { transferReason: t.transferReason }),
       ...(t.summary !== undefined && { summary: t.summary }),
+      ...(t.ticketId !== undefined && { ticketId: t.ticketId }),
     })
     .where(
       and(

@@ -140,6 +140,12 @@ export function createTicketsClient(options: TicketsClientOptions) {
     findAnalystByEmail: (email: string) =>
       call("GET", `/api/analysts?email=${enc(email)}`, ApiResponses.analyst.nullable(), { notFoundAsNull: true }),
 
+    getEmployee: (employeeId: string) =>
+      call("GET", `/api/employees/${enc(employeeId)}`, ApiResponses.employee.nullable(), { notFoundAsNull: true }),
+
+    getAnalyst: (analystId: string) =>
+      call("GET", `/api/analysts/${enc(analystId)}`, ApiResponses.analyst.nullable(), { notFoundAsNull: true }),
+
     searchHelp: (query: string, limit = 3) =>
       call("GET", `/api/help/search?q=${enc(query)}&limit=${limit}`, ApiResponses.articles),
 

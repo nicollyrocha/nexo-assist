@@ -144,6 +144,15 @@ describe("central de ajuda e login", () => {
   });
 });
 
+describe("funcionário e analista por id", () => {
+  it("encontra pelo id e devolve 404 quando não existe", async () => {
+    expect((await call("GET", "/api/employees/emp-ana")).body).toMatchObject({ id: "emp-ana", name: "Ana Souza" });
+    expect((await call("GET", "/api/employees/emp-nao-existe")).status).toBe(404);
+    expect((await call("GET", "/api/analysts/ana-rafael")).body).toMatchObject({ id: "ana-rafael", tier: "N2" });
+    expect((await call("GET", "/api/analysts/emp-ana")).status).toBe(404);
+  });
+});
+
 describe("legado instável", () => {
   it("fica fora do ar durante a queda e volta depois", async () => {
     let clock = 0;

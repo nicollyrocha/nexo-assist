@@ -10,7 +10,14 @@ import {
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import type { TicketsDb } from "../db/client";
-import { findAnalystByEmail, findEmployeeByEmail, listTicketsForRequester, searchHelpArticles } from "../db/repo";
+import {
+  findAnalystByEmail,
+  findEmployeeByEmail,
+  getAnalystById,
+  getEmployeeById,
+  listTicketsForRequester,
+  searchHelpArticles,
+} from "../db/repo";
 import type { LegacySimulator } from "./legacy";
 import {
   ServiceError,
@@ -59,6 +66,14 @@ const routes = [
   }),
   route("GET", "/api/analysts", async ({ url, deps }) => {
     const analyst = await findAnalystByEmail(deps.db, url.searchParams.get("email") ?? "");
+    return analyst ? json(analyst) : error("not_found", "Analista não encontrado.", 404);
+  }),
+  route("GET", "/api/employees/:p", async ({ params: [id], deps }) => {
+    const employee = await getEmployeeById(deps.db, id!);
+    return employee ? json(employee) : error("not_found", "Funcionário não encontrado.", 404);
+  }),
+  route("GET", "/api/analysts/:p", async ({ params: [id], deps }) => {
+    const analyst = await getAnalystById(deps.db, id!);
     return analyst ? json(analyst) : error("not_found", "Analista não encontrado.", 404);
   }),
   route("GET", "/api/help/search", async ({ url, deps }) => {

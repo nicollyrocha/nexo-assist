@@ -98,6 +98,14 @@ describe("contrato", () => {
     expect(await c.getTicket("emp-ana", "INC-20320")).toMatchObject({ ok: true, data: null });
   });
 
+  it("busca funcionário e analista por id (404 vira null)", async () => {
+    const employee = { id: "emp-ana", name: "Ana Souza", email: "ana.souza@nexo.com.br", department: "Financeiro" };
+    const { c, calls } = client([{ status: 200, body: employee }, { status: 404, body: { error: { code: "not_found", message: "x" } } }]);
+    expect(await c.getEmployee("emp-ana")).toMatchObject({ ok: true, data: employee });
+    expect(await c.getAnalyst("ana-x")).toMatchObject({ ok: true, data: null });
+    expect(calls.map((x) => x.url)).toEqual(["http://tickets.test/api/employees/emp-ana", "http://tickets.test/api/analysts/ana-x"]);
+  });
+
   it("resposta fora do contrato é erro explícito", async () => {
     const { c } = client([{ status: 200, body: [{ id: 1 }] }]);
     expect(await c.searchHelp("vpn")).toMatchObject({ ok: false, error: { kind: "bad_response" } });

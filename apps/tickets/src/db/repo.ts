@@ -71,6 +71,16 @@ export async function findAnalystByEmail(db: TicketsDb, email: string) {
   return row ?? null;
 }
 
+export async function getEmployeeById(db: TicketsDb, id: string) {
+  const [row] = await db.select().from(schema.employees).where(eq(schema.employees.id, id));
+  return row ?? null;
+}
+
+export async function getAnalystById(db: TicketsDb, id: string) {
+  const [row] = await db.select().from(schema.analysts).where(eq(schema.analysts.id, id));
+  return row ?? null;
+}
+
 /** Palavras da busca viram um OR no full-text em português (com stemming): "senha bloqueada" acha "bloquear senha". */
 const toOrQuery = (text: string) =>
   text

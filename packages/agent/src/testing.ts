@@ -1,4 +1,4 @@
-import type { Employee, HelpArticle, Ticket, TicketWithEvents } from "@nexo/shared";
+import type { Analyst, Employee, HelpArticle, Ticket, TicketWithEvents } from "@nexo/shared";
 import type { CallResult, TicketsClient } from "@nexo/tickets-client";
 import { MastraLanguageModelV2Mock } from "@mastra/core/test-utils/llm-mock";
 import { createNexoAgent } from "./model";
@@ -75,6 +75,19 @@ export const ana: Employee = {
   department: "Financeiro",
 };
 
+export const carla: Employee = {
+  id: "emp-carla",
+  name: "Carla Mendes",
+  email: "carla.mendes@nexo.com.br",
+  department: "Comercial",
+};
+
+export const rafael: Analyst = { id: "ana-rafael", name: "Rafael Lima", email: "rafael.lima@nexo.com.br", tier: "N2" };
+export const juliana: Analyst = { id: "ana-juliana", name: "Juliana Costa", email: "juliana.costa@nexo.com.br", tier: "N1" };
+
+const employees = [ana, carla];
+const analysts = [rafael, juliana];
+
 const ok = <T>(data: T): CallResult<T> => ({ ok: true, data, attempts: 1, durationMs: 5 });
 const down = <T>(): CallResult<T> => ({
   ok: false,
@@ -84,6 +97,8 @@ const down = <T>(): CallResult<T> => ({
 });
 
 export function fakeTickets(now: Date, opts: { unavailable?: boolean } = {}) {
+  /** Pode ser alternado depois de criado (ex.: login ok, painel do console fora): ver setUnavailable. */
+  const status = { unavailable: !!opts.unavailable };
   const iso = (msAgo: number) => new Date(now.getTime() - msAgo).toISOString();
   const day = 86_400_000;
   const base = { description: "Descrição", affected: "so_eu", assignedTeam: "Suporte N1", resolvedAt: null } as const;
@@ -104,13 +119,17 @@ export function fakeTickets(now: Date, opts: { unavailable?: boolean } = {}) {
 
   const guard = <T>(name: string, fn: () => T): Promise<CallResult<T>> => {
     calls.push(name);
-    return Promise.resolve(opts.unavailable ? down<T>() : ok(fn()));
+    return Promise.resolve(status.unavailable ? down<T>() : ok(fn()));
   };
   const words = (q: string) => q.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [];
 
   const client: TicketsClient = {
-    findEmployeeByEmail: () => guard("findEmployeeByEmail", () => null),
-    findAnalystByEmail: () => guard("findAnalystByEmail", () => null),
+    findEmployeeByEmail: (email) =>
+      guard("findEmployeeByEmail", () => employees.find((e) => e.email === email.trim().toLowerCase()) ?? null),
+    findAnalystByEmail: (email) =>
+      guard("findAnalystByEmail", () => analysts.find((a) => a.email === email.trim().toLowerCase()) ?? null),
+    getEmployee: (id) => guard("getEmployee", () => employees.find((e) => e.id === id) ?? null),
+    getAnalyst: (id) => guard("getAnalyst", () => analysts.find((a) => a.id === id) ?? null),
     searchHelp: (q) =>
       guard("searchHelp", () =>
         articles.filter((a) => words(q).some((w) => `${a.title} ${a.body}`.toLowerCase().includes(w))),
@@ -154,5 +173,13 @@ export function fakeTickets(now: Date, opts: { unavailable?: boolean } = {}) {
         return t;
       }),
   };
-  return { client, tickets, calls, created: () => [...created.values()] as Ticket[] };
+  return {
+    client,
+    tickets,
+    calls,
+    created: () => [...created.values()] as Ticket[],
+    setUnavailable: (value: boolean) => {
+      status.unavailable = value;
+    },
+  };
 }

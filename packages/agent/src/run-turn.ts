@@ -127,7 +127,16 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
     resultSummary: string,
     timing: { durationMs: number; attempts: number },
   ) => {
-    const action: TraceAction = { tool, label: ACTION_LABELS[tool], inputSummary, outcome, resultSummary, ...timing };
+    // Só duração e tentativas: `timing` costuma ser o CallResult inteiro (com dados), que não vai para o chip.
+    const action: TraceAction = {
+      tool,
+      label: ACTION_LABELS[tool],
+      inputSummary,
+      outcome,
+      resultSummary,
+      durationMs: timing.durationMs,
+      attempts: timing.attempts,
+    };
     actions.push(action);
     input.onAction?.(action);
   };
