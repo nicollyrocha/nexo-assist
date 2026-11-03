@@ -75,6 +75,8 @@ const CASES: Case[] = [
     checks: (r) => [
       ["transferiu", r.transfer?.reason === "pedido_do_funcionario"],
       ["resumo útil", (r.transfer?.summary.length ?? 0) >= 20],
+      // Visto no e2e: sem chamado citado, o agent vinculava um chamado aberto qualquer à transferência.
+      ["não inventou chamado em foco", r.transfer?.ticketId == null],
     ],
   },
   {

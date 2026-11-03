@@ -143,6 +143,20 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
 
   const remember = (tickets: Ticket[]) => tickets.forEach((t) => seenTickets.set(t.id, t));
 
+  /**
+   * Chamado que já fazia parte da conversa: citado pelo funcionário, mencionado pelo agent numa
+   * resposta ou alvo do rascunho pendente. Resultado de ferramenta não conta — listar os chamados
+   * para conferir não faz de um deles o assunto da transferência.
+   */
+  const discussed = (id: string) => {
+    if (input.userMessage.includes(id) || input.state.pendingAction?.kind === "update" && input.state.pendingAction.ticketId === id) return true;
+    return input.state.history.some((m) => {
+      if (m.role !== "user" && m.role !== "assistant") return false;
+      const parts = typeof m.content === "string" ? [m.content] : (m.content as { type: string; text?: string }[]).filter((p) => p.type === "text").map((p) => p.text ?? "");
+      return parts.some((text) => text.includes(id));
+    });
+  };
+
   /** Erro do serviço de chamados vira texto honesto para o modelo, nunca exceção. */
   const failure = (r: Extract<CallResult<unknown>, { ok: false }>) =>
     r.error.kind === "unavailable"
@@ -331,8 +345,13 @@ export async function runTurn(input: TurnInput): Promise<TurnResult> {
       }
 
       case "transfer_to_analyst": {
-        const a = args as ToolInput<"transfer_to_analyst">;
-        let note = "";
+        const parsed = args as ToolInput<"transfer_to_analyst">;
+        // Pedido de analista sem chamado em foco não ganha um chamado escolhido pelo modelo.
+        const unlinked = !!parsed.ticket_id && !discussed(parsed.ticket_id);
+        const a = unlinked ? { ...parsed, ticket_id: null } : parsed;
+        let note = unlinked
+          ? ` A transferência foi feita sem chamado vinculado: ${parsed.ticket_id} não foi citado na conversa. Não diga que relacionou um chamado.`
+          : "";
         let timing = local();
         if (a.ticket_id) {
           const r = await input.tickets.transferTicket(

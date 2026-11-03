@@ -50,7 +50,11 @@ export const ToolInputs = {
       .string()
       .min(20)
       .describe("Resumo para o analista: problema, o que já foi tentado, chamados envolvidos, urgência"),
-    ticket_id: ticketId.nullable().describe("Chamado relacionado, se houver"),
+    ticket_id: ticketId
+      .nullable()
+      .describe(
+        "Chamado de que a conversa trata (citado pelo funcionário ou já em discussão). Null se ele só pediu um analista: não escolha um chamado por conta própria",
+      ),
   }),
   register_decision: z.object({
     understanding: z.string().describe("O que você entendeu da mensagem, em uma frase"),

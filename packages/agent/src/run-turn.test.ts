@@ -241,12 +241,26 @@ describe("encaminhamento ao analista (história 5)", () => {
         [decision({ intent: "falar_com_analista" })],
         [text("Chamei um analista.")],
       ],
-      "quero falar com um analista",
+      "o INC-20311 está parado, quero falar com um analista",
     );
     expect(result.transfer).toEqual({ reason: "pedido_do_funcionario", summary: "INC-20311 vencido há 2 dias; funcionária pediu analista.", ticketId: "INC-20311" });
     expect(tickets.calls).toContain("transferTicket");
     expect(result.trace.outcome).toBe("transferiu");
     expect(result.blocks.at(-1)).toMatchObject({ kind: "event" });
+  });
+
+  it("pedido de analista sem chamado em foco não vincula chamado escolhido pelo modelo", async () => {
+    const { result, tickets } = await turn(
+      [
+        [toolUse("list_my_tickets", { only_open: true })],
+        [toolUse("transfer_to_analyst", { reason: "pedido_do_funcionario", summary: "Funcionária pediu para falar com um analista.", ticket_id: "INC-20311" })],
+        [decision({ intent: "falar_com_analista" })],
+        [text("Chamei um analista.")],
+      ],
+      "quero falar com um analista",
+    );
+    expect(result.transfer).toMatchObject({ reason: "pedido_do_funcionario", ticketId: null });
+    expect(tickets.calls).not.toContain("transferTicket");
   });
 
   it("transfere sozinho quando a confiança é baixa", async () => {
