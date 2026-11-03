@@ -8,9 +8,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  // Um turno do agent inclui o modelo e o legado instável (retry): margem generosa.
-  timeout: 120_000,
-  expect: { timeout: 45_000 },
+  // Um turno do agent inclui o modelo e o legado instável (retry). No plano gratuito, com a cota
+  // por minuto apertada, a cadeia de reserva pode levar mais de um minuto: margem generosa.
+  timeout: 300_000,
+  expect: { timeout: 120_000 },
   reporter: [["list"]],
   use: {
     baseURL: "http://localhost:3000",

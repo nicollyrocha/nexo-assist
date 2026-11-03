@@ -1,30 +1,16 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { chatLog, login, readyToChat, releaseConversations, send, shot } from "./helpers";
 
 // História ponta a ponta com o agent real: dúvida resolvida no chat com o detalhe da decisão,
 // transferência a pedido (agent pausado) e o analista assumindo e devolvendo a conversa.
-// Usa o Fábio, que nos dados de exemplo não tem conversa transferida; a última etapa devolve a
-// conversa ao agent, então o teste pode ser repetido.
+// Antes, o console encerra o que uma execução interrompida tenha deixado com analista.
 
 const FUNCIONARIO = "fabio.nunes@nexo.com.br";
 const ANALISTA = "rafael.lima@nexo.com.br";
 
 test.describe.configure({ mode: "serial" });
 
-async function login(page: Page, email: string) {
-  await page.goto("/");
-  await page.getByLabel("E-mail corporativo").fill(email);
-  await page.getByLabel("Senha", { exact: true }).fill("qualquer-senha");
-  await page.getByRole("button", { name: /Entrar/ }).click();
-}
-
-async function send(page: Page, text: string) {
-  const box = page.getByRole("textbox", { name: /Mensagem para/ });
-  await expect(box).toBeEnabled();
-  await box.fill(text);
-  await page.getByRole("button", { name: "Enviar", exact: true }).click();
-}
-
-const shot = (page: Page, name: string) => page.screenshot({ path: `test-results/telas/${name}.png` });
+test.beforeAll(() => releaseConversations("Fábio Nunes"));
 
 test("rotas protegidas: sem sessão volta ao login; funcionário não abre o console", async ({ page }) => {
   await page.goto("/chat");
@@ -40,9 +26,10 @@ test("rotas protegidas: sem sessão volta ao login; funcionário não abre o con
 test("funcionário tira dúvida, vê o porquê e pede um analista", async ({ page }) => {
   await login(page, FUNCIONARIO);
   await expect(page).toHaveURL(/\/chat/);
+  await readyToChat(page);
 
   await send(page, "Qual o horário de atendimento do service desk?");
-  const log = page.getByRole("log", { name: "Mensagens" });
+  const log = chatLog(page);
   await expect(log).toContainText(/8h.*18h/);
 
   // Transparência: chips das ações e o detalhe com entendimento, confiança e por quê.
@@ -57,7 +44,9 @@ test("funcionário tira dúvida, vê o porquê e pede um analista", async ({ pag
   await shot(page, "tela-2-chat-375");
   await page.setViewportSize({ width: 1440, height: 900 });
 
-  await send(page, "Quero falar com um analista, por favor.");
+  // Transferir troca o campo para "Mensagem para o analista": envio sem esperar o campo de volta.
+  await page.getByRole("textbox", { name: "Mensagem para o Nexo Assist" }).fill("Quero falar com um analista, por favor.");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByText("Chamei um analista para você")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Mensagem para o analista" })).toBeVisible();
   await shot(page, "tela-3-chat-transferido");
