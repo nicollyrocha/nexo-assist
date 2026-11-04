@@ -13,7 +13,8 @@ type Seed = {
   articles: (typeof helpArticles.$inferInsert)[];
 };
 
-const HOUR = 3_600_000;
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 export function buildSeed(now: Date): Seed {
@@ -40,6 +41,8 @@ export function buildSeed(now: Date): Seed {
     analysts: [
       { id: "ana-rafael", name: "Rafael Lima", email: "rafael.lima@nexo.com.br", tier: "N2" },
       { id: "ana-juliana", name: "Juliana Costa", email: "juliana.costa@nexo.com.br", tier: "N1" },
+      { id: "ana-marina", name: "Marina Alves", email: "marina.alves@nexo.com.br", tier: "N1" },
+      { id: "ana-thiago", name: "Thiago Pereira", email: "thiago.pereira@nexo.com.br", tier: "N2" },
     ],
     tickets: [
       // Ana: 3 abertos (1 vencido) e 2 resolvidos, como no protótipo.
@@ -195,6 +198,39 @@ export function buildSeed(now: Date): Seed {
         updatedAt: ago(1 * DAY),
         lastAnalystUpdateAt: ago(1 * DAY),
       }),
+      // Usados pelas conversas de exemplo do console (packages/db/src/seed.ts):
+      // um vencido de outro funcionário (8 dias sem atualização > 3 dias úteis) e um crítico recém-aberto.
+      ticket({
+        id: "INC-20286",
+        type: "INC",
+        title: "Assinador digital não reconhece o token",
+        description:
+          "O assinador digital não reconhece o token do certificado desde a troca do notebook. Está assinando petições pelo computador de um colega.",
+        category: "software",
+        priority: "media",
+        affected: "so_eu",
+        status: "aguardando_analista",
+        requesterId: "emp-fabio",
+        assignedTeam: "Suporte N1",
+        openedAt: ago(12 * DAY),
+        updatedAt: ago(8 * DAY),
+        lastAnalystUpdateAt: ago(8 * DAY),
+      }),
+      ticket({
+        id: "INC-20330",
+        type: "INC",
+        title: "Sistema de expedição fora do ar no centro de distribuição",
+        description:
+          "O sistema de expedição não abre em nenhum computador do centro de distribuição; a equipe inteira está sem emitir etiquetas e os caminhões estão parados aguardando carga.",
+        category: "software",
+        priority: "critica",
+        affected: "minha_equipe",
+        status: "aberto",
+        requesterId: "emp-bruno",
+        assignedTeam: "Suporte N2",
+        openedAt: ago(25 * MINUTE),
+        updatedAt: ago(25 * MINUTE),
+      }),
     ],
     events: [
       { ticketId: "INC-20311", kind: "comentario", authorKind: "funcionario", authorId: "emp-ana", body: "Continua lento, principalmente pela manhã.", createdAt: ago(9 * DAY) },
@@ -202,6 +238,7 @@ export function buildSeed(now: Date): Seed {
       { ticketId: "REQ-10442", kind: "status", authorKind: "analista", authorId: "ana-juliana", body: "Requisição aprovada pelo gestor. Monitor em separação.", createdAt: ago(7 * DAY) },
       { ticketId: "INC-20298", kind: "comentario", authorKind: "analista", authorId: "ana-rafael", body: "Permissões sendo replicadas no novo servidor.", createdAt: ago(4 * HOUR) },
       { ticketId: "INC-20150", kind: "status", authorKind: "analista", authorId: "ana-juliana", body: "Senha desbloqueada e redefinida.", createdAt: ago(4 * DAY) },
+      { ticketId: "INC-20286", kind: "status", authorKind: "analista", authorId: "ana-juliana", body: "Driver do token reinstalado; aguardando análise do certificado.", createdAt: ago(8 * DAY) },
     ],
     articles: [
       {

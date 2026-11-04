@@ -170,26 +170,31 @@ export async function listMessagesForConversation(db: Db, conversationId: string
  * transferred = desfecho "transferiu" ou transfer_to_analyst que não falhou.
  */
 export async function saveTrace(db: Db, conversationId: string, trace: DecisionTrace): Promise<string> {
+  const [row] = await db
+    .insert(schema.decisionTraces)
+    .values(traceRow(conversationId, trace))
+    .returning({ id: schema.decisionTraces.id });
+  return row!.id;
+}
+
+/** Linha de decision_traces a partir do trace: JSONB completo + colunas extraídas (também usada pelo seed). */
+export function traceRow(conversationId: string, trace: DecisionTrace): typeof schema.decisionTraces.$inferInsert {
   const transferred =
     trace.outcome === "transferiu" ||
     trace.actions.some((a) => a.tool === "transfer_to_analyst" && a.outcome !== "erro");
-  const [row] = await db
-    .insert(schema.decisionTraces)
-    .values({
-      ...(isUuid(trace.id) && { id: trace.id }),
-      conversationId,
-      trace,
-      intent: trace.intent,
-      outcome: trace.outcome,
-      confidenceLevel: trace.confidence.level,
-      confidenceScore: trace.confidence.score,
-      transferred,
-      inputTokens: trace.usage.inputTokens,
-      outputTokens: trace.usage.outputTokens,
-      cacheReadTokens: trace.usage.cacheReadTokens,
-    })
-    .returning({ id: schema.decisionTraces.id });
-  return row!.id;
+  return {
+    ...(isUuid(trace.id) && { id: trace.id }),
+    conversationId,
+    trace,
+    intent: trace.intent,
+    outcome: trace.outcome,
+    confidenceLevel: trace.confidence.level,
+    confidenceScore: trace.confidence.score,
+    transferred,
+    inputTokens: trace.usage.inputTokens,
+    outputTokens: trace.usage.outputTokens,
+    cacheReadTokens: trace.usage.cacheReadTokens,
+  };
 }
 
 /** Traces da conversa em ordem cronológica. SEM filtro de funcionário: chamar só após checar o acesso. */

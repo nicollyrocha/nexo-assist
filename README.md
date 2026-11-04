@@ -29,6 +29,7 @@ pnpm --filter @nexo/db db:check && pnpm --filter @nexo/tickets db:check   # conf
 pnpm --filter @nexo/db db:migrate
 pnpm --filter @nexo/tickets db:migrate
 pnpm --filter @nexo/tickets db:seed      # dados de exemplo (apaga e recria o banco de chamados)
+pnpm --filter @nexo/db db:seed           # conversas de exemplo do console (recria só as do seed)
 pnpm dev                                 # web em :3000, serviço de chamados em :3001
 ```
 
@@ -41,6 +42,14 @@ Entre em http://localhost:3000 com qualquer senha:
 | Gabriela Rocha | `gabriela.rocha@nexo.com.br` | funcionária sem chamados |
 | Rafael Lima (analista N2) | `rafael.lima@nexo.com.br` | console do analista |
 | Juliana Costa (analista N1) | `juliana.costa@nexo.com.br` | console do analista |
+| Marina Alves (analista N1) | `marina.alves@nexo.com.br` | console com uma conversa já em atendimento em "Minhas" |
+| Thiago Pereira (analista N2) | `thiago.pereira@nexo.com.br` | console do analista |
+
+Com o seed do console (`@nexo/db db:seed`), "Para você" traz quatro conversas aguardando atendente, uma por
+motivo de transferência do Anexo A: Carla pediu um analista (INC-20320), Bruno abriu um chamado crítico
+(INC-20330), o chamado de Fábio está vencido (INC-20286) e o agent teve baixa confiança com Gabriela. Diego
+está em atendimento com a Marina (INC-20290). Esses funcionários entram no chat com o agent pausado até um
+analista devolver ou encerrar a conversa; a Ana fica livre para o roteiro abaixo.
 
 Roteiro curto: como Ana, pergunte "como está meu chamado do notebook?" → o agent mostra que está vencido e
 oferece um analista → abra o **Por quê?** → aceite → entre como Rafael, assuma, responda e devolva ao agent.
