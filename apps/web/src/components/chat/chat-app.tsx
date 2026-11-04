@@ -9,10 +9,9 @@ import {
   type MessageView,
   type TraceAction,
 } from "@nexo/shared";
-import { ArrowDown, ChevronRight, Menu } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { Viewer } from "@/lib/viewer";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { DayPill, SystemDivider } from "@/components/ui/system-divider";
 import { ApiError, apiRequest, goToLogin } from "@/lib/api";
 import { draftStatus, DRAFT_PHRASES } from "@/lib/conversation-state";
@@ -20,7 +19,7 @@ import { dayKey, firstName, formatDayLabel, formatTime } from "@/lib/format";
 import { readChatStream } from "@/lib/sse";
 import { chipText } from "@/lib/trace-copy";
 import { useNow } from "@/lib/use-platform";
-import { ChatDrawer, ChatSidebar } from "./chat-sidebar";
+import { EmployeeShell } from "./employee-shell";
 import { Composer, type ComposerHandle } from "./composer";
 import type { DraftAction } from "./draft-card";
 import { AgentErrorBlock, AgentMessage, AnalystMessage, EmployeeBubble, LiveAgentTurn, type BlockContext } from "./messages";
@@ -59,7 +58,6 @@ export function ChatApp({ user }: { user: Viewer }) {
   const [turn, setTurn] = useState<LiveTurn | null>(null);
   const [limitHit, setLimitHit] = useState(false);
   const [draftText, setDraftText] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [showJump, setShowJump] = useState(false);
   const [creatingNew, setCreatingNew] = useState(false);
@@ -351,38 +349,7 @@ export function ChatApp({ user }: { user: Viewer }) {
   const unsavedTurn = turn && !turn.savedId ? turn : null;
 
   return (
-    <div className="flex h-dvh overflow-clip bg-surface">
-      <ChatSidebar user={user} />
-      <ChatDrawer user={user} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle px-4 md:h-topbar md:gap-4 md:px-8">
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menu"
-            className="-ml-2 flex size-10 items-center justify-center rounded-control text-ink-secondary hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:hidden"
-          >
-            <Menu aria-hidden="true" className="size-5" />
-          </button>
-          <span className="flex flex-1 items-center gap-2 md:hidden">
-            <BrandMark className="h-4.5 w-5 fill-brand-mark" />
-            <span className="text-brand font-bold text-ink">Nexo Assist</span>
-          </span>
-          <nav aria-label="Você está em" className="hidden flex-1 md:block">
-            <ol className="flex items-center gap-2 text-ui">
-              <li className="text-muted">Service desk de TI</li>
-              <li aria-hidden="true">
-                <ChevronRight className="size-3.5 text-muted" />
-              </li>
-              <li aria-current="page" className="font-semibold text-ink">
-                Atendimento
-              </li>
-            </ol>
-          </nav>
-          {view && <StatusPill status={status} analystName={view.analystName} />}
-        </header>
-
+    <EmployeeShell user={user} active="atendimento" crumb="Atendimento" headerEnd={view && <StatusPill status={status} analystName={view.analystName} />}>
         <main className="relative flex min-h-0 flex-1 flex-col">
           <h1 className="sr-only">Atendimento</h1>
           <div role="status" aria-live="polite" className="sr-only">
@@ -432,7 +399,7 @@ export function ChatApp({ user }: { user: Viewer }) {
             <button
               type="button"
               onClick={jumpToEnd}
-              className="absolute bottom-32 left-1/2 inline-flex h-8 -translate-x-1/2 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink shadow-popover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="absolute bottom-32 left-1/2 inline-flex h-8 -translate-x-1/2 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink shadow-popover cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Novas mensagens
               <ArrowDown aria-hidden="true" className="size-3.5" />
@@ -466,8 +433,7 @@ export function ChatApp({ user }: { user: Viewer }) {
             )}
           </div>
         </main>
-      </div>
-    </div>
+    </EmployeeShell>
   );
 }
 

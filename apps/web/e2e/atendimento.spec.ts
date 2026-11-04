@@ -73,3 +73,13 @@ test("analista vê a conversa aguardando, assume e devolve ao agent", async ({ p
   await expect(page.getByRole("button", { name: "Assumir atendimento" })).toHaveCount(0);
   await expect(page.getByText(/devolveu a conversa ao agent/).last()).toBeVisible();
 });
+
+test("navegar do chat para Meu perfil e voltar", async ({ page }) => {
+  await login(page, "ana.souza@nexo.com.br");
+  await page.getByRole("link", { name: "Meu perfil" }).first().click();
+  await expect(page).toHaveURL(/\/perfil/);
+  await expect(page.getByRole("heading", { name: "Meu perfil" })).toBeVisible();
+  await expect(page.getByText("ana.souza@nexo.com.br").first()).toBeVisible();
+  await page.getByRole("link", { name: "Atendimento" }).first().click();
+  await expect(page).toHaveURL(/\/chat/);
+});

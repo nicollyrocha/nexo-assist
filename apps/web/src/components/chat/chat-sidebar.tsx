@@ -1,39 +1,41 @@
 "use client";
 
 import { LogOut, MessageSquare, UserRound, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import type { Viewer } from "@/lib/viewer";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { logout } from "@/lib/api";
 import { initials } from "@/lib/format";
 
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const focusRing = "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed";
 
-function NavItems({ compact }: { compact: boolean }) {
+export type NavKey = "atendimento" | "perfil";
+
+const NAV: { key: NavKey; href: string; label: string; Icon: typeof MessageSquare }[] = [
+  { key: "atendimento", href: "/chat", label: "Atendimento", Icon: MessageSquare },
+  { key: "perfil", href: "/perfil", label: "Meu perfil", Icon: UserRound },
+];
+
+function NavItems({ compact, active }: { compact: boolean; active: NavKey }) {
   return (
     <ul className="flex flex-col gap-0.5">
-      <li>
-        <a
-          href="/chat"
-          aria-current="page"
-          title={compact ? "Atendimento" : undefined}
-          className={`flex h-9 items-center gap-2.5 rounded-control bg-primary-tint text-ui font-semibold text-primary-ink ${compact ? "justify-center" : "px-2.5"} ${focusRing}`}
-        >
-          <MessageSquare aria-hidden="true" className="size-4 shrink-0" />
-          <span className={compact ? "sr-only" : ""}>Atendimento</span>
-        </a>
-      </li>
-      <li>
-        {/* Tela "Meu perfil" fica fora do escopo (extra do protótipo): item visível, sem destino. */}
-        <span
-          aria-disabled="true"
-          title="Em breve"
-          className={`flex h-9 cursor-default items-center gap-2.5 rounded-control text-ui font-medium text-ink-secondary ${compact ? "justify-center" : "px-2.5"}`}
-        >
-          <UserRound aria-hidden="true" className="size-4 shrink-0 text-muted" />
-          <span className={compact ? "sr-only" : ""}>Meu perfil</span>
-        </span>
-      </li>
+      {NAV.map(({ key, href, label, Icon }) => {
+        const on = key === active;
+        return (
+          <li key={key}>
+            <Link
+              href={href}
+              aria-current={on ? "page" : undefined}
+              title={compact ? label : undefined}
+              className={`flex h-9 items-center gap-2.5 rounded-control text-ui ${on ? "bg-primary-tint font-semibold text-primary-ink" : "font-medium text-ink-secondary hover:bg-surface-subtle"} ${compact ? "justify-center" : "px-2.5"} ${focusRing}`}
+            >
+              <Icon aria-hidden="true" className={`size-4 shrink-0 ${on ? "" : "text-muted"}`} />
+              <span className={compact ? "sr-only" : ""}>{label}</span>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -71,7 +73,7 @@ function UserBlock({ user, compact }: { user: Viewer; compact: boolean }) {
 }
 
 /** Sidebar do chat: 232px a partir de 1024, só ícones entre 768 e 1023, gaveta abaixo de 768. */
-export function ChatSidebar({ user }: { user: Viewer }) {
+export function ChatSidebar({ user, active = "atendimento" }: { user: Viewer; active?: NavKey }) {
   return (
     <nav aria-label="Navegação principal" className="hidden shrink-0 flex-col border-r border-border-subtle pt-5 pb-3.5 md:flex md:w-16 md:px-2 lg:w-sidebar lg:px-3.5">
       <div className="flex items-center gap-2.5 md:justify-center lg:justify-start lg:px-2">
@@ -80,10 +82,10 @@ export function ChatSidebar({ user }: { user: Viewer }) {
       </div>
       <div className="h-5.5" />
       <div className="lg:hidden">
-        <NavItems compact />
+        <NavItems compact active={active} />
       </div>
       <div className="hidden lg:block">
-        <NavItems compact={false} />
+        <NavItems compact={false} active={active} />
       </div>
       <div className="flex-1" />
       <div className="lg:hidden">
@@ -97,7 +99,7 @@ export function ChatSidebar({ user }: { user: Viewer }) {
 }
 
 /** Gaveta do celular: mesmo conteúdo da sidebar, modal, foco preso, Esc fecha. */
-export function ChatDrawer({ user, open, onClose }: { user: Viewer; open: boolean; onClose: () => void }) {
+export function ChatDrawer({ user, open, onClose, active = "atendimento" }: { user: Viewer; open: boolean; onClose: () => void; active?: NavKey }) {
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -129,7 +131,7 @@ export function ChatDrawer({ user, open, onClose }: { user: Viewer; open: boolea
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-40 md:hidden">
-      <div aria-hidden="true" className="absolute inset-0 bg-ink/40" onClick={onClose} />
+      <div aria-hidden="true" className="absolute inset-0 cursor-pointer bg-ink/40" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
@@ -145,7 +147,7 @@ export function ChatDrawer({ user, open, onClose }: { user: Viewer; open: boolea
           </button>
         </div>
         <div className="h-5.5" />
-        <NavItems compact={false} />
+        <NavItems compact={false} active={active} />
         <div className="flex-1" />
         <UserBlock user={user} compact={false} />
       </div>
