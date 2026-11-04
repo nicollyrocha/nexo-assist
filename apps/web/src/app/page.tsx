@@ -24,7 +24,7 @@ export default function LoginPage() {
           </span>
           <p className="hidden gap-1.5 text-ui sm:flex">
             <span className="text-muted">Problema para entrar?</span>
-            <a href="tel:4000" className="rounded-tag font-semibold text-primary-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            <a href="tel:4000" className="rounded-tag font-semibold text-primary-ink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
               Ligue no ramal 4000
             </a>
           </p>
@@ -40,7 +40,7 @@ export default function LoginPage() {
           <a
             href="#privacidade"
             title="Seus chamados só são mostrados a você e aos analistas do service desk."
-            className="rounded-tag hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="rounded-tag hover:text-ink cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Privacidade e uso de dados
           </a>

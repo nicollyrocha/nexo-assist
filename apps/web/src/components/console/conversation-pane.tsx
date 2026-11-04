@@ -24,7 +24,7 @@ import { Avatar } from "./conversation-list";
 
 export type ConsoleActionKind = "claim" | "return" | "close";
 
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const focusRing = "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed";
 
 const ACTION_BUSY: Record<ConsoleActionKind, string> = { claim: "Assumindo…", return: "Devolvendo…", close: "Encerrando…" };
 
@@ -116,7 +116,7 @@ function CloseDialog({ name, onCancel, onConfirm }: { name: string; onCancel: ()
   }, [onCancel]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div aria-hidden="true" className="absolute inset-0 bg-ink/40" onClick={onCancel} />
+      <div aria-hidden="true" className="absolute inset-0 cursor-pointer bg-ink/40" onClick={onCancel} />
       <div
         ref={boxRef}
         role="alertdialog"

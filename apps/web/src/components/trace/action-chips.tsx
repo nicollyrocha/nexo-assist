@@ -79,7 +79,7 @@ export function ActionChips({ who, chips, working, slow, details, align = "start
           type="button"
           onClick={openDetails}
           aria-label={`Mostrar mais ${hiddenMobile} ações`}
-          className="-my-1 rounded-tag py-1 text-meta text-muted hover:text-ink sm:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="-my-1 rounded-tag py-1 text-meta text-muted hover:text-ink sm:hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           +{hiddenMobile}
         </button>
@@ -89,7 +89,7 @@ export function ActionChips({ who, chips, working, slow, details, align = "start
           type="button"
           onClick={openDetails}
           aria-label={`Mostrar mais ${hiddenDesktop} ações`}
-          className="-my-1 hidden rounded-tag py-1 text-meta text-muted hover:text-ink sm:inline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="-my-1 hidden rounded-tag py-1 text-meta text-muted hover:text-ink sm:inline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           +{hiddenDesktop}
         </button>
@@ -102,7 +102,7 @@ export function ActionChips({ who, chips, working, slow, details, align = "start
           aria-controls={details.id}
           aria-label="Por que o assistente respondeu assim"
           onClick={details.onToggle}
-          className="-my-1 inline-flex items-center gap-1 rounded-tag py-1 text-meta font-medium text-primary-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="-my-1 inline-flex items-center gap-1 rounded-tag py-1 text-meta font-medium text-primary-ink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           Por quê?
           <ChevronDown aria-hidden="true" className={`size-3 transition-transform duration-200 ${details.open ? "rotate-180" : ""}`} />

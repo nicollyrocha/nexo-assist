@@ -7,7 +7,7 @@ import { EMPTY_LIST_COPY, FILTER_LABELS, previewPrefix, summaryTag } from "@/lib
 import { avatarColor, formatListTime, initials } from "@/lib/format";
 import { btnSecondary } from "@/components/chat/draft-card";
 
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const focusRing = "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed";
 
 type Props = {
   data: ConsoleList | null;

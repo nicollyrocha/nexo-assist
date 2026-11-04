@@ -7,7 +7,7 @@ import { logout } from "@/lib/api";
 import { initials } from "@/lib/format";
 import type { Viewer } from "@/lib/viewer";
 
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const focusRing = "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed";
 
 export function badgeText(n: number) {
   return n > 99 ? "99+" : String(n);

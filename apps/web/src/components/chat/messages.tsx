@@ -76,7 +76,7 @@ export function EmployeeBubble({
       {state === "failed" && (
         <p role="alert" className="text-meta text-danger-ink">
           Não foi enviada.{" "}
-          <button type="button" onClick={onRetry} className="rounded-tag font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+          <button type="button" onClick={onRetry} className="rounded-tag font-semibold underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
             Tentar de novo
           </button>
         </p>
@@ -143,7 +143,7 @@ export function AgentErrorBlock({ code, onRetry }: { code: string; onRetry: () =
       <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <p>
         {text}{" "}
-        <button type="button" onClick={onRetry} className="rounded-tag font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+        <button type="button" onClick={onRetry} className="rounded-tag font-semibold underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
           Tentar de novo
         </button>
       </p>

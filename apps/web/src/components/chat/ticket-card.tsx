@@ -80,7 +80,7 @@ export function TicketCard({ ticket, now }: { ticket: Ticket; now: Date }) {
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="self-start rounded-tag text-meta font-medium text-primary-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="self-start rounded-tag text-meta font-medium text-primary-ink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {expanded ? "Ver menos" : "Ver mais"}
           </button>
@@ -125,7 +125,7 @@ export function TicketCards({ tickets, now }: { tickets: Ticket[]; now: Date }) 
         <button
           type="button"
           onClick={() => setAll(true)}
-          className="self-start rounded-tag text-ui font-medium text-primary-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="self-start rounded-tag text-ui font-medium text-primary-ink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           Ver mais {tickets.length - 3} chamados
         </button>

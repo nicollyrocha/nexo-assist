@@ -104,7 +104,7 @@ export function UpdateDraftCard({ block, status, enabled, disabledNote, busy, no
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as Priority | "")}
-                  className="h-9 w-full rounded-control bg-surface px-2.5 text-ui text-ink outline-1 -outline-offset-1 outline-border-control focus:outline-[1.5px] focus:outline-primary"
+                  className="h-9 w-full cursor-pointer rounded-control bg-surface px-2.5 text-ui text-ink outline-1 -outline-offset-1 outline-border-control focus:outline-[1.5px] focus:outline-primary"
                 >
                   <option value="">Manter {PRIORITY_LABELS[ticket.priority]}</option>
                   {PRIORITIES.map((p) => (

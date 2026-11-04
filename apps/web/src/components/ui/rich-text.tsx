@@ -13,7 +13,7 @@ function inline(text: string, keyBase: string): ReactNode[] {
     const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
     if (link) {
       return (
-        <a key={key} href={link[2]} target="_blank" rel="noopener noreferrer" className="font-medium text-primary-ink underline underline-offset-2">
+        <a key={key} href={link[2]} target="_blank" rel="noopener noreferrer" className="cursor-pointer font-medium text-primary-ink underline underline-offset-2">
           {link[1]}
         </a>
       );

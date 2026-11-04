@@ -35,7 +35,7 @@ export function TicketSelection({ tickets, prompt, chosen, interactive, now, onC
                 onClick={() => onChoose(`${t.id} · ${t.title}`)}
                 className={`group grid w-full grid-cols-[auto_auto_1fr_auto] items-center gap-x-3.5 gap-y-1 px-4 py-3 text-left sm:flex sm:h-11.5 sm:py-0 ${
                   selected ? "bg-primary-hover-row" : ""
-                } enabled:hover:bg-primary-hover-row enabled:focus-visible:bg-primary-hover-row focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary disabled:cursor-default`}
+                } enabled:cursor-pointer enabled:hover:bg-primary-hover-row enabled:focus-visible:bg-primary-hover-row focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary disabled:cursor-default`}
               >
                 <span
                   aria-hidden="true"

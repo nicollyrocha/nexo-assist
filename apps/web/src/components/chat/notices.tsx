@@ -141,7 +141,7 @@ export function EmptyState({ firstName, onPick, disabled }: { firstName: string;
             type="button"
             disabled={disabled}
             onClick={() => onPick(s)}
-            className="min-h-9 rounded-control bg-surface px-3 py-1.75 text-ui font-medium text-ink outline-1 -outline-offset-1 outline-border-subtle enabled:hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-55"
+            className="min-h-9 rounded-control bg-surface px-3 py-1.75 text-ui font-medium text-ink outline-1 -outline-offset-1 outline-border-subtle enabled:hover:bg-surface-subtle enabled:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-55"
           >
             {s}
           </button>

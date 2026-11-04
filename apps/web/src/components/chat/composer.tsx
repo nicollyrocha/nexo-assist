@@ -90,7 +90,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           disabled={sending || disabled}
           aria-disabled={!canSend}
           aria-label="Enviar"
-          className="mb-1.5 inline-flex size-9 shrink-0 items-center justify-center gap-1.5 rounded-tag bg-primary text-ui font-semibold text-white enabled:hover:bg-primary-hover enabled:active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:px-3"
+          className="mb-1.5 inline-flex size-9 shrink-0 items-center justify-center gap-1.5 rounded-tag bg-primary text-ui font-semibold text-white enabled:hover:bg-primary-hover enabled:active:bg-primary-active enabled:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:px-3"
         >
           <ArrowUp aria-hidden="true" className="size-3.5" />
           <span aria-hidden="true" className="hidden sm:inline">

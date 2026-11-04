@@ -177,7 +177,7 @@ export function LoginForm() {
               aria-expanded={forgotOpen}
               aria-controls={popoverId}
               onClick={() => setForgotOpen((v) => !v)}
-              className="rounded-tag text-ui leading-normal font-medium text-primary-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="rounded-tag text-ui leading-normal font-medium text-primary-ink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Esqueci minha senha
             </button>
@@ -209,7 +209,7 @@ export function LoginForm() {
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
               aria-pressed={showPassword}
-              className="flex size-7.5 shrink-0 items-center justify-center rounded-tag text-muted hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="flex size-7.5 shrink-0 items-center justify-center rounded-tag text-muted hover:bg-surface-subtle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               {showPassword ? <EyeOff aria-hidden="true" className="size-4" /> : <Eye aria-hidden="true" className="size-4" />}
             </button>
@@ -245,14 +245,14 @@ export function LoginForm() {
       <button
           type="submit"
           aria-busy={sending}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-control bg-primary text-body-lg font-semibold text-white shadow-primary hover:bg-primary-hover active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-control bg-primary text-body-lg font-semibold text-white shadow-primary hover:bg-primary-hover active:bg-primary-active cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           {sending ? "Entrando…" : "Entrar"}
           {sending ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : <ArrowRight aria-hidden="true" className="size-4" />}
       </button>
       <p className="-mt-3 text-center text-ui text-muted sm:hidden">
           Problema para entrar?{" "}
-          <a href="tel:4000" className="font-semibold text-primary-ink">
+          <a href="tel:4000" className="cursor-pointer font-semibold text-primary-ink">
             Ligue no ramal 4000
           </a>
         </p>

@@ -168,7 +168,7 @@ function CaseSummary({ detail, onFocusTicket }: { detail: ConsoleConversation; o
       {c.ticketId && (
         <p className="text-ui text-ink-secondary">
           Chamado em foco:{" "}
-          <button type="button" onClick={() => onFocusTicket(c.ticketId!)} className="rounded-tag font-medium text-primary-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+          <button type="button" onClick={() => onFocusTicket(c.ticketId!)} className="rounded-tag font-medium text-primary-ink underline-offset-2 hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
             {c.ticketId}
           </button>
         </p>

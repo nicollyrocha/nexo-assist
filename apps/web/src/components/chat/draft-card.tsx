@@ -76,7 +76,7 @@ export function FailureAlert({ attempts }: { attempts: number }) {
 }
 
 const btnBase =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-control text-ui/natural focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex h-9 items-center justify-center gap-2 rounded-control text-ui/natural enabled:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55";
 export const btnPrimary = `${btnBase} bg-primary pl-3.5 pr-2.5 font-semibold text-white enabled:hover:bg-primary-hover enabled:active:bg-primary-active`;
 export const btnSecondary = `${btnBase} bg-surface px-3.5 font-medium text-ink shadow-button outline-1 -outline-offset-1 outline-border-control enabled:hover:bg-surface-subtle`;
 export const btnGhost = `${btnBase} px-3.5 font-medium text-ink-secondary enabled:hover:bg-surface`;
@@ -136,7 +136,7 @@ export function DraftCard({ block, status, enabled, disabledNote, busy, now, onA
 
   const set = <K extends keyof DraftEdits>(key: K, value: DraftEdits[K]) => setEdits((e) => ({ ...e, [key]: value }));
   const fieldLabel = "text-meta text-muted";
-  const selectCls = `${inputBase} h-9 px-2.5 text-ui`;
+  const selectCls = `${inputBase} h-9 cursor-pointer px-2.5 text-ui`;
 
   return (
     <CardShell

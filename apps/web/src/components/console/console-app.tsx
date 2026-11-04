@@ -362,7 +362,7 @@ export function ConsoleApp({ user, initialFilter, initialQuery, initialId }: Pro
       {showPane && panelPinned && <div className="hidden w-ticket-panel shrink-0 border-l border-border-subtle 2xl:flex">{panel}</div>}
       {showPane && panelOpen && (
         <div className={`fixed inset-0 z-40 ${panelPinned ? "2xl:hidden" : ""}`}>
-          <div aria-hidden="true" className="absolute inset-0 bg-ink/30" onClick={() => setPanelOpen(false)} />
+          <div aria-hidden="true" className="absolute inset-0 cursor-pointer bg-ink/30" onClick={() => setPanelOpen(false)} />
           <div className="absolute inset-x-0 bottom-0 flex max-h-[80vh] overflow-hidden rounded-t-card shadow-popover md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-ticket-panel md:rounded-none">
             <TicketPanel detail={detail} loading={detailState === "loading"} now={now} onClose={() => setPanelOpen(false)} onRetry={() => selectedId && void loadDetail(selectedId, { initial: true })} />
           </div>

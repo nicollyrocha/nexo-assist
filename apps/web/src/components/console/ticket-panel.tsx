@@ -7,7 +7,7 @@ import { STATUS_DOT, StatusDot } from "@/components/ui/dots";
 import { btnSecondary } from "@/components/chat/draft-card";
 import { firstName, formatAgo, formatDateTime, formatDeadline, formatShortDate, formatTime } from "@/lib/format";
 
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const focusRing = "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed";
 
 const STATUS_TONE: Partial<Record<Ticket["status"], string>> = {
   aguardando_analista: "text-warning-ink",

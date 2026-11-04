@@ -22,7 +22,7 @@ export function QuickReplies({ options, chosen, enabled, label, onChoose }: Prop
             disabled={disabled}
             aria-pressed={selected}
             onClick={() => onChoose(option)}
-            className={`min-h-9 rounded-control px-3 py-1.75 text-ui/natural font-medium outline-1 -outline-offset-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-0 ${
+            className={`min-h-9 enabled:cursor-pointer rounded-control px-3 py-1.75 text-ui/natural font-medium outline-1 -outline-offset-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-0 ${
               selected
                 ? "bg-primary-tint text-primary-ink outline-accent"
                 : "bg-surface text-ink outline-border-subtle enabled:hover:bg-surface-subtle"
