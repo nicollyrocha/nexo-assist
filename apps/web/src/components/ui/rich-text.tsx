@@ -3,12 +3,13 @@ import { Fragment, type ReactNode } from "react";
 // Markdown limitado das respostas (chat.md §2): parágrafos, **negrito**, listas e links.
 // Montado como nós React (sem innerHTML), então texto do modelo nunca vira HTML.
 
-const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\((?:https?:\/\/|mailto:)[^)\s]+\))/g;
+const INLINE = /(\*\*[^*]+\*\*|\*[^*\s](?:[^*]*[^*\s])?\*|\[[^\]]+\]\((?:https?:\/\/|mailto:)[^)\s]+\))/g;
 
 function inline(text: string, keyBase: string): ReactNode[] {
   return text.split(INLINE).map((part, i) => {
     const key = `${keyBase}-${i}`;
     if (part.startsWith("**") && part.endsWith("**")) return <strong key={key} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (/^\*[^*]+\*$/.test(part)) return <em key={key}>{part.slice(1, -1)}</em>;
     const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
     if (link) {
       return (
@@ -27,6 +28,14 @@ export function RichText({ text, className }: { text: string; className?: string
     <div className={className}>
       {blocks.map((block, bi) => {
         const lines = block.split("\n");
+        if (lines.every((l) => /^\s*>/.test(l))) {
+          const quote = lines.map((l) => l.replace(/^\s*>\s?/, "")).join("\n");
+          return (
+            <blockquote key={bi} className="whitespace-pre-wrap break-words border-l-2 border-border-subtle pl-3 text-ink-secondary">
+              {inline(quote, String(bi))}
+            </blockquote>
+          );
+        }
         const isList = lines.every((l) => /^\s*(?:[-*•]|\d+[.)])\s+/.test(l));
         if (isList) {
           const ordered = /^\s*\d/.test(lines[0]);

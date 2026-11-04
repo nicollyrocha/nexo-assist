@@ -167,12 +167,12 @@ Larguras estruturais (viram tokens nomeados):
 
 | Token | px | Origem |
 |---|---|---|
-| `sidebar` | 232 | sidebar do chat (231.5 + borda) |
+| `sidebar` | 260.5 | sidebar do chat (231.5 de conteúdo + 2×14 de padding + borda) |
 | `rail` | 64 | rail do console (63.5 + borda) |
 | `conv-list` | 380 | lista de conversas (379.5 + borda) |
 | `ticket-panel` | 340 | painel "Chamados do funcionário" |
 | `topbar` | 64 | altura das barras superiores (63.5 + borda) |
-| `chat-column` | 808 | coluna de mensagens do chat (1208 − 2×200) |
+| `chat-column` | 872 | coluna de mensagens do chat no PNG de 1440 (x 460→1332); no app fica 46px à direita do centro |
 | `bubble-agent` | 600 | largura máx. da bolha do agent no chat |
 | `bubble-user` | 520 | largura máx. da bolha do funcionário no chat |
 | `bubble-console` | 420 | largura máx. das bolhas no console |
@@ -366,7 +366,7 @@ Mantém o `@theme inline` das fontes que já existe e acrescenta o resto.
   --text-badge--line-height: normal;
 
   /* Larguras estruturais (w-*, h-*) */
-  --spacing-sidebar: 232px;
+  --spacing-sidebar: 260.5px;
   --spacing-rail: 64px;
   --spacing-conv-list: 380px;
   --spacing-ticket-panel: 340px;
@@ -374,7 +374,8 @@ Mantém o `@theme inline` das fontes que já existe e acrescenta o resto.
   --spacing-showcase: 800px;
 
   /* Larguras máximas (max-w-*) */
-  --container-chat-column: 808px;
+  --container-chat-column: 872px;
+  --leading-natural: normal;
   --container-bubble-agent: 600px;
   --container-bubble-user: 520px;
   --container-bubble-console: 420px;

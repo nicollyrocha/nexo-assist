@@ -190,7 +190,7 @@ export function UpdateDraftCard({ block, status, enabled, disabledNote, busy, no
                 }}
                 aria-label={`Ajustar a atualização do ${ticket.id}`}
               >
-                Ajustar
+                Editar
               </button>
               <button
                 type="button"

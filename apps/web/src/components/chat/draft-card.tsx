@@ -76,7 +76,7 @@ export function FailureAlert({ attempts }: { attempts: number }) {
 }
 
 const btnBase =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-control text-ui focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex h-9 items-center justify-center gap-2 rounded-control text-ui/natural focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-55";
 export const btnPrimary = `${btnBase} bg-primary pl-3.5 pr-2.5 font-semibold text-white enabled:hover:bg-primary-hover enabled:active:bg-primary-active`;
 export const btnSecondary = `${btnBase} bg-surface px-3.5 font-medium text-ink shadow-button outline-1 -outline-offset-1 outline-border-control enabled:hover:bg-surface-subtle`;
 export const btnGhost = `${btnBase} px-3.5 font-medium text-ink-secondary enabled:hover:bg-surface`;
@@ -155,6 +155,7 @@ export function DraftCard({ block, status, enabled, disabledNote, busy, now, onA
           left={[
             <span key="n" className="text-meta font-medium text-muted">Novo chamado</span>,
             <span key="r" className="text-meta text-muted">Rascunho</span>,
+            <span key="t" className="text-meta text-muted">{TICKET_TYPE_LABELS[draft.type]}</span>,
           ]}
           right={
             <span id={stateId}>
@@ -241,13 +242,12 @@ export function DraftCard({ block, status, enabled, disabledNote, busy, now, onA
           </div>
         ) : (
           <>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border-subtle pt-3 sm:grid-cols-4 sm:gap-6">
-              <Field label="Tipo">{TICKET_TYPE_LABELS[draft.type]}</Field>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border-subtle pt-3 sm:grid-cols-3 sm:gap-6">
               <Field label="Categoria">{CATEGORY_LABELS[draft.category]}</Field>
               <Field label="Prioridade">
-                <span className="inline-flex flex-wrap items-baseline gap-x-1">
+                <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
                   <PriorityValue priority={draft.priority} />
-                  <span className="text-ui font-normal text-muted">· resposta {formatDeadline(due, now)}</span>
+                  <span className="text-ui/natural font-normal text-muted">· resposta {formatDeadline(due, now)}</span>
                 </span>
               </Field>
               <Field label="Afetados">{AFFECTED_YOU[draft.affected]}</Field>
@@ -305,7 +305,7 @@ export function DraftCard({ block, status, enabled, disabledNote, busy, now, onA
                 onClick={startEditing}
                 aria-label="Ajustar o rascunho"
               >
-                Ajustar
+                Editar
               </button>
               <button
                 type="button"

@@ -47,7 +47,11 @@ describe("ChatApp — bloqueio do input", () => {
     expect(screen.getByRole("button", { name: "Confirmar e criar o chamado" })).toBeDisabled();
   });
 
-  it("contador aparece a partir de 25 com o que resta", async () => {
+  it("contador está sempre visível e, perto do limite, mostra o que resta", async () => {
+    serve(conversationView({ messagesUsed: 16 }));
+    const first = render(<ChatApp user={user} />);
+    expect(await screen.findByText("16/30 mensagens nesta sessão")).toBeInTheDocument();
+    first.unmount();
     serve(conversationView({ messagesUsed: 26 }));
     render(<ChatApp user={user} />);
     expect(await screen.findByText("26/30 mensagens nesta sessão · restam 4")).toBeInTheDocument();

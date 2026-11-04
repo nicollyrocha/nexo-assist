@@ -390,7 +390,7 @@ export function ChatApp({ user }: { user: Viewer }) {
           </div>
 
           <div ref={scrollRef} onScroll={onScroll} className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto">
-            <div className="mx-auto flex w-full max-w-chat-column flex-1 flex-col px-4 pt-4 md:px-8 md:pt-7 2xl:px-0">
+            <div className="relative mx-auto flex w-full max-w-chat-column flex-1 flex-col px-4 pt-4 md:px-8 md:pt-7 2xl:left-11.5 2xl:px-0">
               {!view && !loadError && <ChatSkeleton />}
               {!view && loadError && <LoadError onRetry={() => void refresh()} />}
               {showEmpty && <EmptyState firstName={firstName(user.name)} onPick={(t) => void send(t)} disabled={!canAct} />}
@@ -439,7 +439,7 @@ export function ChatApp({ user }: { user: Viewer }) {
             </button>
           )}
 
-          <div className="mx-auto w-full max-w-chat-column shrink-0 px-4 pt-2.5 pb-[max(12px,env(safe-area-inset-bottom))] md:px-8 md:pb-4.5 2xl:px-0">
+          <div className="relative mx-auto w-full max-w-chat-column shrink-0 px-4 pt-2.5 pb-[max(12px,env(safe-area-inset-bottom))] md:px-8 md:pb-4.5 2xl:left-11.5 2xl:px-0">
             {atLimit && view ? (
               <SessionLimitNotice limit={view.messagesLimit} />
             ) : closed && view ? (

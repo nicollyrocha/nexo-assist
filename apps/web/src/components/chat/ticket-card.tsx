@@ -1,7 +1,6 @@
 "use client";
 
-import { CATEGORY_LABELS, REOPEN_WINDOW_DAYS, TICKET_TYPE_LABELS, isOverdue, type Ticket } from "@nexo/shared";
-import { ClockAlert } from "lucide-react";
+import { CATEGORY_LABELS, REOPEN_WINDOW_DAYS, isOverdue, type Ticket } from "@nexo/shared";
 import { useId, useState, type ReactNode } from "react";
 import { PriorityValue, StatusLabel } from "@/components/ui/dots";
 import { formatAgo, formatDateTime, formatDeadline, formatShortDate } from "@/lib/format";
@@ -19,7 +18,7 @@ export function CardShell({ children, className = "", ...rest }: { children: Rea
 
 export function Eyebrow({ left, right }: { left: ReactNode[]; right?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pb-0.5">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pb-0.5 text-meta/natural">
       {left.map((node, i) => (
         <span key={i} className="flex items-center gap-2 whitespace-nowrap">
           {i > 0 && <span aria-hidden="true" className="size-0.75 rounded-full bg-border-subtle" />}
@@ -35,8 +34,8 @@ export function Eyebrow({ left, right }: { left: ReactNode[]; right?: ReactNode 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-meta text-muted">{label}</dt>
-      <dd className="text-body font-medium text-ink">{children}</dd>
+      <dt className="text-meta/natural text-muted">{label}</dt>
+      <dd className="text-body/natural font-medium text-ink">{children}</dd>
     </div>
   );
 }
@@ -46,19 +45,10 @@ const DAY = 86_400_000;
 function LastUpdate({ ticket, now }: { ticket: Ticket; now: Date }) {
   if (!ticket.dueAt) return <>{formatAgo(ticket.updatedAt, now)}</>;
   const overdue = isOverdue(new Date(ticket.dueAt), now);
-  if (overdue) {
-    return (
-      <span className="inline-flex flex-wrap items-center gap-x-1">
-        <ClockAlert aria-hidden="true" className="size-3.5 text-prazo-vencido" />
-        <span className="text-prazo-vencido">{formatAgo(ticket.updatedAt, now)}</span>
-        <span className="text-ui font-normal text-muted">· prazo vencido</span>
-      </span>
-    );
-  }
   return (
-    <span className="inline-flex flex-wrap items-baseline gap-x-1">
-      {formatAgo(ticket.updatedAt, now)}
-      <span className="text-ui font-normal text-muted">· resposta {formatDeadline(ticket.dueAt, now)}</span>
+    <span className="inline-flex flex-wrap items-baseline gap-x-1.5 sm:flex-nowrap sm:whitespace-nowrap">
+      <span className={overdue ? "text-prazo-vencido" : ""}>{formatAgo(ticket.updatedAt, now)}</span>
+      <span className="text-ui/natural font-normal text-muted">{overdue ? "· prazo vencido" : `· resposta ${formatDeadline(ticket.dueAt, now)}`}</span>
     </span>
   );
 }
@@ -76,7 +66,7 @@ export function TicketCard({ ticket, now }: { ticket: Ticket; now: Date }) {
       <div className="flex flex-col gap-1.5 px-4 pt-4 pb-3.5 sm:px-4.5">
         <Eyebrow
           left={[
-            <span key="t" className="text-meta font-medium text-muted">{TICKET_TYPE_LABELS[ticket.type]}</span>,
+            <span key="t" className="text-meta font-medium text-muted">Chamado</span>,
             <span key="n" className="text-meta text-muted">{ticket.id}</span>,
           ]}
           right={<StatusLabel status={ticket.status} />}
@@ -105,7 +95,7 @@ export function TicketCard({ ticket, now }: { ticket: Ticket; now: Date }) {
           <Field label="Aberto em">{formatDateTime(ticket.openedAt)}</Field>
           {resolved ? (
             <Field label="Resolvido em">
-              <span className="inline-flex flex-wrap items-baseline gap-x-1">
+              <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
                 {formatShortDate(ticket.resolvedAt!)}
                 {reopenUntil && reopenUntil.getTime() > now.getTime() && (
                   <span className="text-ui font-normal text-muted">· dá para reabrir até {formatShortDate(reopenUntil)}</span>

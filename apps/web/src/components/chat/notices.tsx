@@ -115,7 +115,7 @@ export function ClosedNotice({ byName, time, onNew, busy }: { byName: string | n
 
 /** Contador da sessão: visível a partir de 25 mensagens (decisão do briefing). */
 export function SessionCounter({ used, limit, id }: { used: number; limit: number; id: string }) {
-  if (used < limit - 5) return <span id={id} className="sr-only">{`${used} de ${limit} mensagens nesta sessão`}</span>;
+  if (used < limit - 5) return <p id={id} className="text-meta whitespace-nowrap text-muted tabular-nums">{`${used}/${limit} mensagens nesta sessão`}</p>;
   const reached = used >= limit;
   return (
     <p id={id} aria-live="polite" className="inline-flex items-center gap-1 text-meta text-warning-ink tabular-nums">

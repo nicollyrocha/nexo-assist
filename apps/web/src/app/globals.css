@@ -144,7 +144,7 @@
   --text-badge--line-height: normal;
 
   /* Larguras estruturais (w-*, h-*) */
-  --spacing-sidebar: 232px;
+  --spacing-sidebar: 260.5px;
   --spacing-rail: 64px;
   --spacing-conv-list: 380px;
   --spacing-ticket-panel: 340px;
@@ -152,11 +152,14 @@
   --spacing-showcase: 800px;
 
   /* Larguras máximas (max-w-*) */
-  --container-chat-column: 808px;
+  --container-chat-column: 872px;
   --container-bubble-agent: 600px;
   --container-bubble-user: 520px;
   --container-bubble-console: 420px;
   --container-auth-form: 380px;
+
+  /* Altura de linha "normal" (o Pencil exporta botões, chips e valores assim) */
+  --leading-natural: normal;
 
   /* Raios */
   --radius-tail: 4px;

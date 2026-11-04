@@ -43,7 +43,7 @@ export function TicketSelection({ tickets, prompt, chosen, interactive, now, onC
                     selected ? "border-[5px] border-primary" : "border-[1.5px] border-radio-off group-enabled:group-hover:border-[5px] group-enabled:group-hover:border-primary group-enabled:group-focus-visible:border-[5px] group-enabled:group-focus-visible:border-primary"
                   }`}
                 />
-                <span className="text-meta font-medium text-muted sm:w-20 sm:shrink-0">{t.id}</span>
+                <span className="text-meta/natural font-medium text-muted sm:shrink-0">{t.id}</span>
                 <span className="col-span-4 row-start-2 truncate text-body font-medium text-ink sm:flex-1">{t.title}</span>
                 <span className="col-span-4 row-start-3 inline-flex items-center gap-1.5 whitespace-nowrap text-meta text-muted sm:row-auto">
                   <StatusDot status={t.status} />

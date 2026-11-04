@@ -31,6 +31,26 @@ export type BlockContext = {
 
 const bubbleText = "text-body text-ink";
 
+/** Texto de agente com a última pergunta destacada (como a "Question" do protótipo) quando há opções logo abaixo. */
+function splitQuestion(content: string, hasOptions: boolean): { body: string; question: string | null } {
+  if (!hasOptions) return { body: content, question: null };
+  const paragraphs = content.trim().split(/\n{2,}/);
+  const last = paragraphs[paragraphs.length - 1] ?? "";
+  if (paragraphs.length > 1 && last.endsWith("?") && last.length <= 90 && !/[*>\n]/.test(last)) {
+    return { body: paragraphs.slice(0, -1).join("\n\n"), question: last };
+  }
+  return { body: content, question: null };
+}
+
+/** Cartões de chamado (sem seleção nem rascunho) seguidos de opções: o texto vem depois dos cartões, junto das opções (Tela 3). */
+function trailingBubble(blocks: MessageBlock[]): boolean {
+  return (
+    blocks.some((b) => b.kind === "ticket_cards") &&
+    !blocks.some((b) => b.kind === "ticket_selection" || b.kind === "draft" || b.kind === "update_draft") &&
+    blocks.some((b) => b.kind === "quick_replies")
+  );
+}
+
 export function EmployeeBubble({
   text,
   time,
@@ -70,6 +90,18 @@ function AgentBubble({ children }: { children: ReactNode }) {
     <div className="flex w-full max-w-bubble-agent flex-col gap-3 rounded-bubble rounded-tl-tail bg-surface px-4 py-3 outline-1 -outline-offset-1 outline-border-subtle">
       {children}
     </div>
+  );
+}
+
+function BubbleText({ text, time, hasOptions }: { text: string; time: string; hasOptions: boolean }) {
+  const { body, question } = splitQuestion(text, hasOptions);
+  return (
+    <>
+      <div title={`Enviada às ${time}`} className={`${bubbleText} leading-5.5`}>
+        <RichText text={body} className="flex flex-col gap-3" />
+      </div>
+      {question && <p className="text-body/natural font-semibold text-ink">{question}</p>}
+    </>
   );
 }
 
@@ -123,6 +155,7 @@ function Blocks({ message, index, ctx }: { message: MessageView; index: number; 
   const isLatest = index === ctx.latestAgentIndex;
   const hasCards = message.blocks.some((b) => b.kind === "ticket_cards" || b.kind === "ticket_selection");
   const hasDraft = message.blocks.some((b) => b.kind === "draft" || b.kind === "update_draft");
+  const trailing = trailingBubble(message.blocks);
   const busy = ctx.busyDraft?.messageId === message.id ? ctx.busyDraft.action : null;
   const onDraft = (action: DraftAction, text: string) => ctx.onSend(text, { messageId: message.id, action });
 
@@ -172,14 +205,16 @@ function Blocks({ message, index, ctx }: { message: MessageView; index: number; 
         // Com rascunho na mensagem, os botões do card já são as opções (evita Confirmar duplicado).
         if (hasDraft || !hasCards) return null;
         return (
-          <QuickReplies
-            key={i}
-            label="Opções de resposta"
-            options={block.options}
-            chosen={quickReplyChoice(ctx.messages, index, block.options)}
-            enabled={isLatest && ctx.canAct}
-            onChoose={(text) => ctx.onSend(text)}
-          />
+          <AgentBubble key={i}>
+            {trailing && message.content.trim() && <BubbleText text={message.content} time={formatTime(message.createdAt)} hasOptions />}
+            <QuickReplies
+              label="Opções de resposta"
+              options={block.options}
+              chosen={quickReplyChoice(ctx.messages, index, block.options)}
+              enabled={isLatest && ctx.canAct}
+              onChoose={(text) => ctx.onSend(text)}
+            />
+          </AgentBubble>
         );
       case "event":
         return <SystemDivider key={i} text={block.text} time={formatTime(message.createdAt)} className="w-full self-stretch pt-2 pb-1" />;
@@ -210,13 +245,9 @@ export function AgentMessage({ message, index, ctx }: { message: MessageView; in
         details={trace ? { id: detailsId, buttonId, open, onToggle: () => setOpen((v) => !v) } : undefined}
       />
       {trace && open && <DecisionDetails trace={trace} blocks={message.blocks} audience="employee" id={detailsId} labelledBy={buttonId} />}
-      {(message.content.trim() || inlineReplies) && (
+      {(message.content.trim() || inlineReplies) && !trailingBubble(message.blocks) && (
         <AgentBubble>
-          {message.content.trim() && (
-            <div title={`Enviada às ${time}`} className={`${bubbleText} leading-5.5`}>
-              <RichText text={message.content} className="flex flex-col gap-3" />
-            </div>
-          )}
+          {message.content.trim() && <BubbleText text={message.content} time={time} hasOptions={!!inlineReplies} />}
           {inlineReplies && (
             <QuickReplies
               label="Opções de resposta"
